@@ -18,10 +18,27 @@
   "contributes": {
     "commands": [
       {
-        "command": "navigate-rails-files.helloWorld",
-        "title": "Hello World"
+        "command": "navigate-rails-files.open-rb-file",
+        "title": "Open .rb file of the component .html.erb or _spec.rb file",
+        "when": "navigate-rails-files.allow-to-open-rb-file"
       }
-    ]
+    ],
+    "keybindings": [
+      {
+        "command": "navigate-rails-files.open-rb-file",
+        "key": "alt+i"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "navigate-rails-files.allow-to-open-rb-file": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable to change to .rb files"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
