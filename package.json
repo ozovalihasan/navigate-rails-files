@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:navigate-rails-files.helloWorld"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
