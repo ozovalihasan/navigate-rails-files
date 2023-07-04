@@ -160,8 +160,7 @@ const findActionAndController = () => {
                                                     .replace(".turbo_stream.erb", "")
                                                     .replace(".html.erb", "")
                                                     .replace("_controller.rb", "")
-                                                    .replace(".rb", "")
-                                                    .replace(".snap", "");
+                                                    .replace(".rb", "");
 
         let action = "";
         let controller = "";
