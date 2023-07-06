@@ -177,11 +177,11 @@ suite('Extension Test Suite', () => {
 
     })
 
-    test('Test getWorkspaceFolder function', () => {
-        sinon.stub((window.activeTextEditor as TextEditor).document.uri, "path").value("mock_workspace_folder/app/controllers/product_conroller.rb");
+    test('Test getProjectRoot function', () => {
+        sinon.stub((window.activeTextEditor as TextEditor).document.uri, "path").value("mock_project_froot_folder/app/controllers/product_conroller.rb");
 
-        utils.getWorkspaceFolder()
-        expect(utils.getWorkspaceFolder()).to.equal("mock_workspace_folder/");
+        utils.getProjectRoot()
+        expect(utils.getProjectRoot()).to.equal("mock_project_froot_folder/");
     });
 
     suite('Test openDocument function ', () => {

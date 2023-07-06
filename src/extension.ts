@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { commands, window, ExtensionContext } from 'vscode';
-import { changeToFileForModelFiles, findActionAndController, getWorkspaceFolder, isModelFile, isViewRelatedFile, openDocument } from './utils';
+import { changeToFileForModelFiles, findActionAndController, getProjectRoot, isModelFile, isViewRelatedFile, openDocument } from './utils';
 import * as utils from "./utils"
 
 // This method is called when your extension is activated
@@ -21,7 +21,7 @@ export function activate(context: ExtensionContext) {
 				if ( isViewRelatedFile(activeFileName) ) {
 					let [controller, action] = findActionAndController();
 	
-					const workspaceFolder = getWorkspaceFolder();
+					const workspaceFolder = getProjectRoot();
 	
 					await utils.openDocument(workspaceFolder + "app/controllers/" + controller + "_controller.rb", () => utils.moveCursorToAction(action));
 	

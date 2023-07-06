@@ -7,7 +7,7 @@ export const changeToFileForModelFiles = async () => {
         window.setStatusBarMessage("There is no a model name", 1000);
         return; 
     }
-    const workspaceFolder = getWorkspaceFolder();
+    const workspaceFolder = getProjectRoot();
 
     await openDocument(workspaceFolder + "app/models/" + modelName + ".rb");
 };
@@ -45,7 +45,7 @@ export const openDocument = async (filePath: string, callback: Function | null =
     }
 };
 
-export const getWorkspaceFolder = () => {
+export const getProjectRoot = () => {
     const activeFilePath = (window.activeTextEditor as TextEditor).document.uri.path;
 
     return (activeFilePath.match(/(.*\/)(app|spec)\/(models|views|controllers)/)?.slice(1)[0])
