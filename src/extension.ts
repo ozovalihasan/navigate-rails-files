@@ -11,22 +11,21 @@ export function activate(context: ExtensionContext) {
 	// The commandId parameter must match the command field in package.json
 
 	context.subscriptions.push(
-		commands.registerCommand('navigate-rails-files.open-rb-file', () => {
+		commands.registerCommand('navigate-rails-files.open-rb-file',async () => {
 			const editor = window.activeTextEditor;
 	
 			if (editor) {
 				let activeFileName = editor.document.fileName;
 				if ( isViewRelatedFile(activeFileName) ) {
-					
 					let [controller, action] = findActionAndController();
 	
 					const workspaceFolder = getWorkspaceFolder();
 	
-					openDocument(workspaceFolder + "app/controllers/" + controller + "_controller.rb", () => moveCursorToAction(action));
+					await openDocument(workspaceFolder + "app/controllers/" + controller + "_controller.rb", () => moveCursorToAction(action));
 	
 				} else if ( isModelFile(activeFileName) ) {
-					
-					changeToFileForModelFiles();    
+                    
+					await changeToFileForModelFiles();    
 					
 				} else {
 					
@@ -39,7 +38,7 @@ export function activate(context: ExtensionContext) {
 	);
 }
 
-export const changeToFileForModelFiles = () => {
+export const changeToFileForModelFiles = async () => {
     const modelName = findModelName();
     if (!modelName) { 
         window.setStatusBarMessage("There is no a model name", 1000);
@@ -47,7 +46,7 @@ export const changeToFileForModelFiles = () => {
     }
     const workspaceFolder = getWorkspaceFolder();
 
-    openDocument(workspaceFolder + "app/models/" + modelName + ".rb");
+    await openDocument(workspaceFolder + "app/models/" + modelName + ".rb");
 };
 
 export const findModelName = () => {
@@ -59,7 +58,6 @@ export const findModelName = () => {
     const modelName = activeFileName.replace("_spec.rb", "")
                                     .replace(".rb", "")
                                     .replace(/.*\/(spec|app)\/models\//, "");
-                            
                                 
     return modelName;
 };

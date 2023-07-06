@@ -34,6 +34,72 @@ suite('Extension Test Suite', () => {
 	
 	window.showInformationMessage('Start all tests.');
 
+	suite('Test "navigate-rails-files.open-rb-file" command', () => {
+		suite("for view related files", () => {
+			test('if a view file is opened', async () => {
+				await openFileForTests('/app/views/products/index.html.erb');
+		
+				await commands.executeCommand('navigate-rails-files.open-rb-file');
+				
+				let editor = navigateRailsFiles.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(path.resolve(__dirname + testFolderLocation + "/app/controllers/products_controller.rb"))
+				expect(navigateRailsFiles.inActionBlock("index")).to.be.true
+			});
+			
+			test('if a controller file is opened', async () => {
+				await openFileForTests('/app/controllers/products_controller.rb');
+				navigateRailsFiles.moveCursorToStr('A point below the action "index"');
+	
+				await commands.executeCommand('navigate-rails-files.open-rb-file');
+				
+				let editor = navigateRailsFiles.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(path.resolve(__dirname + testFolderLocation + "/app/controllers/products_controller.rb"))
+				expect(navigateRailsFiles.inActionBlock("index")).to.be.true
+			});
+	
+			test('if a view test file is opened', async () => {
+				await openFileForTests('/spec/views/products/index.html.erb_spec.rb');
+				await commands.executeCommand('navigate-rails-files.open-rb-file');
+				
+				let editor = navigateRailsFiles.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(path.resolve(__dirname + testFolderLocation + "/app/controllers/products_controller.rb"))
+				expect(navigateRailsFiles.inActionBlock("index")).to.be.true
+			});
+		})
+		
+		suite("for model related files", () => {
+			test('if a model file is opened', async () => {
+				await openFileForTests('/app/models/product.rb');
+				const statusBarMessage = sinon.stub(vscode.window, "setStatusBarMessage");
+	
+				await commands.executeCommand('navigate-rails-files.open-rb-file');
+				
+				let editor = navigateRailsFiles.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(path.resolve(__dirname + testFolderLocation + "/app/models/product.rb"))
+				expect(statusBarMessage.called).to.be.true
+			});
+	
+			test('if a model test file is opened', async () => {
+				await openFileForTests('/spec/models/product_spec.rb');
+	
+				await commands.executeCommand('navigate-rails-files.open-rb-file');
+				
+				let editor = navigateRailsFiles.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(path.resolve(__dirname + testFolderLocation + "/app/models/product.rb"))
+			});
+		})
+	})
+
 	test('Test isViewRelatedFile function', () => {
 		expect(navigateRailsFiles.isViewRelatedFile('app/views/test.html.erb')).to.be.true
 		expect(navigateRailsFiles.isViewRelatedFile('app/controllers/test_controller.rb')).to.be.true
