@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { commands, window, Range, Selection, Position, workspace, TextEditor, ExtensionContext } from 'vscode';
-
+import { commands, window, Range, Selection, Position, workspace, TextEditor, ExtensionContext, WorkspaceFolder } from 'vscode';
+import {resolve} from "path";
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: ExtensionContext) {
@@ -26,7 +26,7 @@ export function activate(context: ExtensionContext) {
 	
 				} else if ( isModelFile(activeFileName) ) {
 					
-					changeToFileForModelFiles(editor, "app/models", ".rb");    
+					changeToFileForModelFiles();    
 					
 				} else {
 					
@@ -39,15 +39,21 @@ export function activate(context: ExtensionContext) {
 	);
 }
 
-const changeToFileForModelFiles = (editor: TextEditor, folderName: string, fileExtension: string) => {
-    const modelName = findModelName(editor);
-
+export const changeToFileForModelFiles = () => {
+    const modelName = findModelName();
+    if (!modelName) { 
+        window.setStatusBarMessage("There is no a model name", 1000);
+        return; 
+    }
     const workspaceFolder = getWorkspaceFolder();
 
-    openDocument(workspaceFolder + folderName + "/" + modelName + fileExtension);
+    openDocument(workspaceFolder + "app/models/" + modelName + ".rb");
 };
 
-const findModelName = (editor: TextEditor) => {
+export const findModelName = () => {
+    const editor = findEditor();
+    if (!editor) { return; }
+    
     const activeFileName = editor.document.fileName;
 
     const modelName = activeFileName.replace("_spec.rb", "")
@@ -58,13 +64,13 @@ const findModelName = (editor: TextEditor) => {
     return modelName;
 };
 
-const openDocument = async (filePath: string, callback: Function | null = null) => {
-    const editor = window.activeTextEditor;
+export const openDocument = async (filePath: string, callback: Function | null = null) => {
+    const editor = findEditor();
 
     if (editor) {
         let activeFileName = editor.document.fileName;
 
-        if (activeFileName === filePath) {
+        if (activeFileName === resolve(filePath)) {
             window.setStatusBarMessage("The requested page is already opened.", 1000);
         }
     }
@@ -78,65 +84,53 @@ const openDocument = async (filePath: string, callback: Function | null = null) 
     }
 };
 
-const getWorkspaceFolder = () => {
-    const editor = window.activeTextEditor;
+export const getWorkspaceFolder = () => {
+    const activeFilePath = (window.activeTextEditor as TextEditor).document.uri.path;
 
-    if (editor) {
-        let activeFileName = editor.document.fileName;
-        const workspaceFolder = activeFileName.match(/(.*\/)(app|spec)\/(models|views|controllers)/)?.slice(1)[0] || "";
-
-        if (workspaceFolder === "") {
-            window.setStatusBarMessage("There is no a workspace folder", 1000);
-            return;
-        }
-
-        return workspaceFolder;
-    } else {
-        window.setStatusBarMessage('There is no an editor to select.', 1000);    
-    }
+    return (activeFilePath.match(/(.*\/)(app|spec)\/(models|views|controllers)/)?.slice(1)[0])
 };
 
-const isViewRelatedFile = (fileName: string) : Boolean => (isViewFile(fileName) || isControllerFile(fileName));
+export const isViewRelatedFile = (fileName: string) : Boolean => (isViewFile(fileName) || isControllerFile(fileName));
 
-const isViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isTurboStreamViewFile(fileName));
+export const isViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isTurboStreamViewFile(fileName));
 
-const isControllerFile = (fileName: string) => Boolean(fileName.match(/app\/controllers/));
+export const isControllerFile = (fileName: string) => Boolean(fileName.match(/app\/controllers\/.*_controller.rb/));
 
-const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.html\.erb/));
+export const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.html\.erb/));
 
-const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.turbo_stream\.erb/));
+export const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.turbo_stream\.erb/));
 
-const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/models/));
+export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/models/));
 
-const  moveCursorToAction = (action: string) => {
+export const moveCursorToStr = (str: string) => {
+    const editor = findEditor();
+    if (!editor) { return; }
+
+    const document = editor.document;
+    const wordPosition = document.positionAt(document.getText().indexOf(str));
+    const newPosition = new Position(wordPosition.line, wordPosition.character + str.length);
+    editor.selection = new Selection(newPosition, newPosition);
+}
+
+export const findEditor = (): TextEditor | undefined => {
     const editor = window.activeTextEditor;
     if (!editor) {
       window.showErrorMessage('No active text editor');
       return;
     }
 
-    if (checkingAction(action)) { return; }
+    return editor;
+}
 
-    const actionDefinition = `def ${action}`;
-    
-    const document = editor.document;
-    const wordPosition = document.positionAt(document.getText().indexOf(actionDefinition));
-    const newPosition = new Position(wordPosition.line, wordPosition.character + actionDefinition.length);
-    
-    editor.edit(editBuilder => {
-      editBuilder.insert(newPosition, '');
-    }).then(() => {
-      editor.selection = new Selection(newPosition, newPosition);
-    });
+export const moveCursorToAction = (action: string) => {
+    if (inActionBlock(action)) { return; }
+
+    moveCursorToStr(`def ${action}`);
 };
 
-const checkingAction = (action: string) => {
-    const editor = window.activeTextEditor;
-    
-    if (!editor) {
-        window.showErrorMessage('No active text editor');
-        return;
-    }
+export const inActionBlock = (action: string) => {
+    const editor = findEditor();
+    if (!editor) { return; }
 
     const cursorPosition = editor.selection.active; 
     const fileTextToCursor = editor.document.getText(new Range(0, 0, cursorPosition.line, cursorPosition.character));
@@ -148,7 +142,7 @@ const checkingAction = (action: string) => {
     return false;
 };
 
-const findActionAndController = () => {
+export const findActionAndController = () => {
     const editor = window.activeTextEditor;
 
     if (editor) {
@@ -190,4 +184,4 @@ const findActionAndController = () => {
 };
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+function deactivate() {}
