@@ -1,7 +1,14 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { commands, window, ExtensionContext } from 'vscode';
-import { changeToFileForModelFiles, findActionAndController, getProjectRoot, isModelFile, isViewRelatedFile, openDocument } from './utils';
+import { 
+	changeToFileForModelFiles, 
+	isModelFile, 
+	isViewRelatedFile ,
+	changeToFileForViewFiles,
+	findEditor,
+	changeToFileForControllerFiles
+} from './utils';
 import * as utils from "./utils"
 
 // This method is called when your extension is activated
@@ -14,20 +21,17 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(
 		commands.registerCommand('navigate-rails-files.open-rb-file',async () => {
-			const editor = window.activeTextEditor;
+			const editor = findEditor();
 	
 			if (editor) {
 				let activeFileName = editor.document.fileName;
+
 				if ( isViewRelatedFile(activeFileName) ) {
-					let [controller, action] = findActionAndController();
-	
-					const workspaceFolder = getProjectRoot();
-	
-					await utils.openDocument(workspaceFolder + "app/controllers/" + controller + "_controller.rb", () => utils.moveCursorToAction(action));
+					await changeToFileForControllerFiles()
 	
 				} else if ( isModelFile(activeFileName) ) {
                     
-					await changeToFileForModelFiles();    
+					await changeToFileForModelFiles("app/models/", ".rb");    
 					
 				} else {
 					
@@ -37,6 +41,23 @@ export function activate(context: ExtensionContext) {
 			}
 		})
 	
+	);
+
+	context.subscriptions.push(
+
+		commands.registerCommand('navigate-rails-files.change-to-app-html-file', async () => {
+			const editor = findEditor();
+	
+			if (editor) {
+				let activeFileName = editor.document.fileName
+	
+				if ( isViewRelatedFile(activeFileName) ) {
+					await changeToFileForViewFiles("app", "html")
+				} else {
+					window.setStatusBarMessage("Your file isn't suitable to be opened with an file extension 'html.erb' ", 1000);
+				}
+			}
+		})
 	);
 }
 

@@ -1,1 +1,1 @@
-#dummy test file for the view "index" of ProductsController 
+# dummy test file for the view "index.html" of ProductsController 

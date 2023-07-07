@@ -8,6 +8,8 @@ import { afterEach, beforeEach } from 'mocha';
 
 const testFolderLocation = "/../../../src/test/suite/example"
 
+const fullPathForTests = (filePath: string) => (path.resolve(__dirname + testFolderLocation + filePath))
+
 const openFileForTests = async(filePath: string = '/app/controllers/products_controller.rb') => {
 	const uri = Uri.file(
 		path.join(__dirname + testFolderLocation + filePath)
@@ -98,6 +100,15 @@ suite('Extension Test Suite', () => {
         expect(utils.isModelFile('spec/views/products/index.turbo_stream.erb_spec.rb')).to.be.false
     });
 
+    test('Test isTestFile function', () => {
+        expect(utils.isTestFile('spec/models/product_spec.rb')).to.be.true
+        expect(utils.isTestFile('spec/views/products/index.html.erb_spec.rb')).to.be.true
+        expect(utils.isTestFile('spec/views/products/index.turbo_stream.erb_spec.rb')).to.be.true
+        
+        expect(utils.isTestFile('app/controllers/products_controller.rb')).to.be.false
+        expect(utils.isTestFile('app/models/product.rb')).to.be.false
+        expect(utils.isTestFile('app/views/products/index.turbo_stream.erb')).to.be.false
+        expect(utils.isTestFile('app/views/products/index.html.erb')).to.be.false
     });
 
     suite("Test findActionAndController function", () => {
@@ -211,10 +222,10 @@ suite('Extension Test Suite', () => {
     })
 
     test('Test getProjectRoot function', () => {
-        sinon.stub((window.activeTextEditor as TextEditor).document.uri, "path").value("mock_project_froot_folder/app/controllers/product_conroller.rb");
+        sinon.stub((window.activeTextEditor as TextEditor).document.uri, "path").value("mock_project_root_folder/app/controllers/product_controller.rb");
 
         utils.getProjectRoot()
-        expect(utils.getProjectRoot()).to.equal("mock_project_froot_folder/");
+        expect(utils.getProjectRoot()).to.equal("mock_project_root_folder/");
     });
 
     suite('Test openDocument function ', () => {
@@ -252,7 +263,7 @@ suite('Extension Test Suite', () => {
             sinon.stub(utils, "findModelName").returns("product");
             const openDocument = sinon.stub(utils, "openDocument");
 
-            await utils.changeToFileForModelFiles();
+            await utils.changeToFileForModelFiles("app/models", ".rb");
             expect(openDocument.called).to.be.true;
         });
 
@@ -260,8 +271,91 @@ suite('Extension Test Suite', () => {
             sinon.stub(utils, "findModelName");
             const statusBarMessage = sinon.stub(vscode.window, "setStatusBarMessage");
 
-            await utils.changeToFileForModelFiles();
+            await utils.changeToFileForModelFiles("app/models", ".rb");
             expect(statusBarMessage.called).to.be.true;
         });
+    })
+    
+    test("Test changeToFileForControllerFiles function", async () => {
+        await openFileForTests('/app/views/products/index.html.erb')
+        
+        const openDocument = sinon.stub(utils, "openDocument");
+        await utils.changeToFileForControllerFiles();
+        
+        expect(openDocument.calledWith(fullPathForTests("/app/controllers/products_controller.rb"))).to.be.true;     
+    });
+
+    test("Test checkFileExists function", () => {
+        expect(utils.checkFileExists(fullPathForTests("/app/controllers/products_controller.rb"))).to.be.true;
+        expect(utils.checkFileExists(fullPathForTests("/not_exist_file.rb"))).to.be.false;
+    });
+
+    suite("Test changeToFileForViewFiles function", () => {
+        suite("if the folder name is 'app'", () => {
+            suite("if the file extension is 'html'", () => {
+                test("if action.html.erb file exists", async () => {
+                    await openFileForTests('/app/controllers/products_controller.rb')
+                    utils.moveCursorToStr('A point in the action "index"');
+
+                    const openDocument = sinon.stub(utils, "openDocument");
+                    await utils.changeToFileForViewFiles("app", "html");
+                    
+                    expect(openDocument.calledWith(fullPathForTests("/app/views/products/index.html.erb"))).to.be.true;     
+                }); 
+
+                test("if action.html.erb file doesn't exist", async () => {
+                    await openFileForTests('/app/controllers/products_controller.rb')
+                    utils.moveCursorToStr('A point in the action "create"');
+                    
+                    const openDocument = sinon.stub(utils, "openDocument");
+                    await utils.changeToFileForViewFiles("app", "html");
+                    
+                    expect(openDocument.calledWith(fullPathForTests("/app/views/products/create.turbo_stream.erb"))).to.be.true;     
+                }); 
+
+                test("if the current file has a turbo_stream.erb extension", async () => {
+                    await openFileForTests('/spec/views/products/index.turbo_stream.erb_spec.rb')
+                    
+                    const openDocument = sinon.stub(utils, "openDocument");
+                    await utils.changeToFileForViewFiles("app", "html");
+                    
+                    expect(openDocument.calledWith(fullPathForTests("/app/views/products/index.html.erb"))).to.be.true;     
+                }); 
+            }); 
+
+            test("if file extension is 'turbo_stream'", async () => {
+                await openFileForTests('/app/controllers/products_controller.rb')
+                utils.moveCursorToStr('A point in the action "index"');
+    
+                const openDocument = sinon.stub(utils, "openDocument");
+                await utils.changeToFileForViewFiles("app", "turbo_stream");
+                
+                expect(openDocument.calledWith(fullPathForTests("/app/views/products/index.turbo_stream.erb"))).to.be.true;     
+            });
+        });
+
+        suite("if folder name is 'spec'", () => {
+            test("if the file extension is 'html'", async () => {
+                await openFileForTests('/app/views/products/index.html.erb')
+
+                const openDocument = sinon.stub(utils, "openDocument");
+                await utils.changeToFileForViewFiles("spec", "html");
+                
+                expect(openDocument.calledWith(fullPathForTests("/spec/views/products/index.html.erb_spec.rb"))).to.be.true;     
+            }); 
+
+            test("if the file extension is 'turbo_stream'", async () => {
+                await openFileForTests('/app/views/products/index.turbo_stream.erb')
+
+                const openDocument = sinon.stub(utils, "openDocument");
+                await utils.changeToFileForViewFiles("spec", "turbo_stream");
+                
+                expect(openDocument.calledWith(fullPathForTests("/spec/views/products/index.turbo_stream.erb_spec.rb"))).to.be.true;     
+            }); 
+
+            
+        });
+
+        
     })
 });

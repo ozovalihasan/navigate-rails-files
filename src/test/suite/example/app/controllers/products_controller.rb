@@ -10,4 +10,8 @@ class ProductsController < ApplicationController
   def show; end
 
   # A point below the action "show"
+
+  def create 
+    # A point in the action "create"
+  end
 end

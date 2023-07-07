@@ -1,15 +1,24 @@
-import { window, Range, Selection, Position, workspace, TextEditor } from 'vscode';
+import { window, Range, Selection, Position, workspace, TextEditor, Uri } from 'vscode';
 import {resolve} from "path";
+import * as fs from 'fs'; // In NodeJS: 'const fs = require('fs')'
 
-export const changeToFileForModelFiles = async () => {
+export const changeToFileForModelFiles = async (folderName: string, fileExtension: string) => {
     const modelName = findModelName();
     if (!modelName) { 
         window.setStatusBarMessage("There is no a model name", 1000);
         return; 
     }
+    const projectRoot = getProjectRoot();
+    
+    await openDocument(projectRoot + folderName + "/" + modelName + fileExtension);
+};
+
+export const changeToFileForControllerFiles = async () => {
+    let [controller, action] = findActionAndController();
+	
     const workspaceFolder = getProjectRoot();
 
-    await openDocument(workspaceFolder + "app/models/" + modelName + ".rb");
+    await openDocument(workspaceFolder + "app/controllers/" + controller + "_controller.rb", () => moveCursorToAction(action));
 };
 
 export const findModelName = () => {
@@ -27,10 +36,15 @@ export const findModelName = () => {
 
 export const openDocument = async (filePath: string, callback: Function | null = null) => {
     const editor = findEditor();
-
+    const isFileExist = checkFileExists(filePath)
+    if (!isFileExist) {
+        window.setStatusBarMessage(`Your file(${filePath}) doesn't exist.`, 1000);    
+        return;
+    }
+    
     if (editor) {
         let activeFileName = editor.document.fileName;
-
+        
         if (activeFileName === resolve(filePath)) {
             window.setStatusBarMessage("The requested page is already opened.", 1000);
         }
@@ -39,6 +53,7 @@ export const openDocument = async (filePath: string, callback: Function | null =
     try {
         const document = await workspace.openTextDocument(filePath);
         await window.showTextDocument(document);
+        
         if (callback) { callback(); }
     } catch (e) {
         window.setStatusBarMessage("The file couldn't be opened.", 1000);
@@ -62,6 +77,8 @@ export const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app
 export const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.turbo_stream\.erb/));
 
 export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/models/));
+
+export const isTestFile = (fileName: string) => Boolean(fileName.match(/spec\/.*_spec.rb/));
 
 export const moveCursorToStr = (str: string) => {
     const editor = findEditor();
@@ -143,3 +160,25 @@ export const findActionAndController = () => {
     }
     
 };
+
+export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileExtension: "html" | "turbo_stream") => {
+    let [controller, action] = findActionAndController()
+
+    const projectRoot = getProjectRoot();
+    let fullPath = projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + ".erb" + (folderName === "spec" ? "_spec.rb" : "")
+
+    if (fileExtension === "html") {
+        
+        const isFileExist = checkFileExists(fullPath);
+        if (!isFileExist) {
+            fullPath = fullPath.replace("html", "turbo_stream")
+        }
+    }
+
+    await openDocument(fullPath)
+    
+}
+
+export const checkFileExists = (filePath: string): boolean => {
+    return fs.existsSync(filePath)
+}
