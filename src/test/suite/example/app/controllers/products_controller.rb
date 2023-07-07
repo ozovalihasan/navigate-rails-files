@@ -14,4 +14,8 @@ class ProductsController < ApplicationController
   def create 
     # A point in the action "create"
   end
+
+  def edit 
+    # A point in the action "edit"
+  end
 end

@@ -220,4 +220,117 @@ suite('Extension Test Suite', () => {
 			expect(statusBarMessage.called).to.be.true
 		});
 	})
+
+	suite('Test "navigate-rails-files.change-to-app-turbo-stream-file" command', () => {
+		suite("for views", () => {
+			test('if a app/turbo_stream file is opened', async () => {
+				const statusBarMessage = sinon.stub(window, "setStatusBarMessage");
+				
+				await openFileForTests('/app/views/products/index.turbo_stream.erb');
+				
+				await commands.executeCommand('navigate-rails-files.change-to-app-turbo-stream-file');
+				
+				let editor = utils.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(fullPathForTests("/app/views/products/index.turbo_stream.erb"))
+				expect(statusBarMessage.called).to.be.true
+			});
+
+			test('if a app/html file is opened and there is no an action.turbo_stream.erb file', async () => {
+				const statusBarMessage = sinon.stub(window, "setStatusBarMessage");
+				await openFileForTests('/app/views/products/edit.html.erb');
+				
+				await commands.executeCommand('navigate-rails-files.change-to-app-turbo-stream-file');
+				
+				let editor = utils.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(fullPathForTests("/app/views/products/edit.html.erb"))
+				expect(statusBarMessage.called).to.be.true
+			});
+		})
+			
+		suite('for controllers', async () => {
+			test('if there is a turbo_stream.erb file of the action', async () => {
+				await openFileForTests('/app/controllers/products_controller.rb');
+				utils.moveCursorToStr('A point in the action "index"');
+
+				await commands.executeCommand('navigate-rails-files.change-to-app-turbo-stream-file');
+				
+				let editor = utils.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(fullPathForTests("/app/views/products/index.turbo_stream.erb"))
+			});
+
+			test('if there is no a turbo_stream.erb file of the action', async () => {
+				const statusBarMessage = sinon.stub(window, "setStatusBarMessage");
+				
+				await openFileForTests('/app/controllers/products_controller.rb');
+				utils.moveCursorToStr('A point in the action "edit"');
+
+				await commands.executeCommand('navigate-rails-files.change-to-app-turbo-stream-file');
+				
+				let editor = utils.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(fullPathForTests('/app/controllers/products_controller.rb'))
+				expect(statusBarMessage.called).to.be.true
+			});
+		});
+
+		suite("for test files", () => {
+			test('if a html.erb_spec.rb file is opened', async () => {
+				await openFileForTests('/spec/views/products/index.html.erb_spec.rb');
+				
+	
+				await commands.executeCommand('navigate-rails-files.change-to-app-turbo-stream-file');
+				
+				let editor = utils.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(fullPathForTests("/app/views/products/index.turbo_stream.erb"))
+			});
+
+			test('if a turbo_stream.erb_spec.rb file is opened', async () => {
+				await openFileForTests('/spec/views/products/index.turbo_stream.erb_spec.rb');
+	
+				await commands.executeCommand('navigate-rails-files.change-to-app-turbo-stream-file');
+				
+				let editor = utils.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(fullPathForTests("/app/views/products/index.turbo_stream.erb"))
+			});
+			
+			test('if a html.erb_spec.rb file is opened and there is no an action.turbo_stream.erb file', async () => {
+				const statusBarMessage = sinon.stub(window, "setStatusBarMessage");
+				
+				await openFileForTests('/spec/views/products/edit.html.erb_spec.rb');
+	
+				await commands.executeCommand('navigate-rails-files.change-to-app-turbo-stream-file');
+				
+				let editor = utils.findEditor();
+				if (!editor) { return; }
+		
+				expect(editor.document.fileName).to.be.equal(fullPathForTests('/spec/views/products/edit.html.erb_spec.rb'))
+				expect(statusBarMessage.called).to.be.true
+			});
+	
+		})
+
+		test('for unsuitable file', async () => {
+			const statusBarMessage = sinon.stub(window, "setStatusBarMessage");
+			await openFileForTests('/app/models/product.rb');
+			
+			await commands.executeCommand('navigate-rails-files.change-to-app-turbo-stream-file');
+			
+			let editor = utils.findEditor();
+			if (!editor) { return; }
+	
+			expect(editor.document.fileName).to.be.equal(fullPathForTests("/app/models/product.rb"))
+			expect(statusBarMessage.called).to.be.true
+		});
+	})
 });

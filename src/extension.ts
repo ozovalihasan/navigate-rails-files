@@ -59,6 +59,23 @@ export function activate(context: ExtensionContext) {
 			}
 		})
 	);
+
+	context.subscriptions.push(
+
+		commands.registerCommand('navigate-rails-files.change-to-app-turbo-stream-file', async () => {
+			const editor = findEditor();
+	
+			if (editor) {
+				let activeFileName = editor.document.fileName
+	
+				if ( isViewRelatedFile(activeFileName) ) {
+					await changeToFileForViewFiles("app", "turbo_stream")
+				} else {
+					window.setStatusBarMessage("Your file isn't suitable to be opened with an file extension 'turbo_stream.erb' ", 1000);
+				}
+			}
+		})
+	);
 }
 
 // This method is called when your extension is deactivated

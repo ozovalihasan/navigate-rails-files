@@ -26,6 +26,11 @@
         "command": "navigate-rails-files.change-to-app-html-file",
         "title": "Open files ending with turbo_stream.erb or html.erb in the folder '/app'",
         "when": "navigate-rails-files.allow-to-open-app-html-file"
+      },
+      {
+        "command": "navigate-rails-files.change-to-app-turbo-stream-file",
+        "title": "Open files ending with turbo_stream.erb or html.erb in the folder '/app'",
+        "when": "navigate-rails-files.allow-to-open-app-turbo-stream-file"
       }
     ],
     "keybindings": [
@@ -36,6 +41,10 @@
       {
         "command": "navigate-rails-files.change-to-app-html-file",
         "key": "alt+o"
+      },
+      {
+        "command": "navigate-rails-files.change-to-app-turbo-stream-file",
+        "key": "alt+u"
       }
     ],
     "configuration": {
@@ -44,12 +53,17 @@
         "navigate-rails-files.allow-to-open-rb-file": {
           "type": "boolean",
           "default": true,
-          "description": "Enable to change to files ending with .rb in the folder '/app'"
+          "description": "Enable to open files ending with .rb in the folder '/app'"
         },
         "navigate-rails-files.allow-to-open-app-html-file": {
           "type": "boolean",
           "default": true,
-          "description": "Enable to change to files ending with .html.erb or .turbo_stream.erb in the folder '/app'"
+          "description": "Enable to open files ending with .html.erb or .turbo_stream.erb in the folder '/app'"
+        },
+        "navigate-rails-files.allow-to-open-app-turbo-stream-file": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable to open files ending with .turbo_stream.erb in the folder '/app'"
         }
       }
     }
