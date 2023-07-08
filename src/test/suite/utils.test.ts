@@ -20,7 +20,7 @@ const openFileForTests = async(filePath: string = '/app/controllers/products_con
 	
 }
 
-suite('Extension Test Suite', () => {
+suite('Utils Test Suite', () => {
 	beforeEach(() => {
         commands.executeCommand('workbench.action.closeActiveEditor')
 

@@ -72,9 +72,9 @@ export const isViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isT
 
 export const isControllerFile = (fileName: string) => Boolean(fileName.match(/app\/controllers\/.*_controller.rb/));
 
-export const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.html\.erb/));
+export const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.html\.(erb|slim|haml)/));
 
-export const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.turbo_stream\.erb/));
+export const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.turbo_stream\.(erb|slim|haml)/));
 
 export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/models/));
 
@@ -125,14 +125,14 @@ export const findActionAndController = () => {
 
     if (editor) {
         let activeFileName = editor.document.fileName;
-
+        
         let folderOfController = activeFileName.replace(/(spec|app)\/(views|controllers)/, "app/views")
-                                                    .replace(".turbo_stream.erb_spec.rb", "")
-                                                    .replace(".html.erb_spec.rb", "")
-                                                    .replace(".turbo_stream.erb", "")
-                                                    .replace(".html.erb", "")
-                                                    .replace("_controller.rb", "")
-                                                    .replace(".rb", "");
+                                                    .replace(/.turbo_stream.(erb|slim|haml)_spec.rb/, "")
+                                                    .replace(/.html.(erb|slim|haml)_spec.rb/, "")
+                                                    .replace(/.turbo_stream.(erb|slim|haml)/, "")
+                                                    .replace(/.html.(erb|slim|haml)/, "")
+                                                    .replace("_controller.rb", "");
+                                                    
 
         let action = "";
         let controller = "";
@@ -165,15 +165,21 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
     let [controller, action] = findActionAndController()
 
     const projectRoot = getProjectRoot();
-    let fullPath = projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + ".erb" + (folderName === "spec" ? "_spec.rb" : "")
+    let fullPath = projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + ".erb" + (folderName === "spec" ? "_spec.rb" : "");
 
-    if (fileExtension === "html") {
+    ["erb", "slim", "haml"].forEach(template_engine => {
+        fullPath.replace(/erb|slim|haml/, template_engine)
+
+        if (fileExtension === "html") {
         
-        const isFileExist = checkFileExists(fullPath);
-        if (!isFileExist) {
-            fullPath = fullPath.replace("html", "turbo_stream")
-        }
-    }
+            const isFileExist = checkFileExists(fullPath);
+            if (!isFileExist) {
+                fullPath = fullPath.replace("html", "turbo_stream")
+            }
+        }    
+
+        if ( checkFileExists(fullPath) ) {return;}
+    });
 
     await openDocument(fullPath)
     
