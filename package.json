@@ -31,6 +31,11 @@
         "command": "navigate-rails-files.change-to-app-turbo-stream-file",
         "title": "Open files ending with turbo_stream.erb or html.erb in the folder '/app'",
         "when": "navigate-rails-files.allow-to-open-app-turbo-stream-file"
+      },
+      {
+        "command": "navigate-rails-files.change-to-rspec-file",
+        "title": "Open files in the folder '/spec'",
+        "when": "navigate-rails-files.allow-to-open-rspec-file"
       }
     ],
     "keybindings": [
@@ -45,6 +50,10 @@
       {
         "command": "navigate-rails-files.change-to-app-turbo-stream-file",
         "key": "alt+u"
+      },
+      {
+        "command": "navigate-rails-files.change-to-rspec-file",
+        "key": "alt+p"
       }
     ],
     "configuration": {
@@ -64,6 +73,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enable to open files ending with .turbo_stream.erb in the folder '/app'"
+        },
+        "navigate-rails-files.allow-to-open-rspec-file": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable to open files in the folder '/spec'"
         }
       }
     }

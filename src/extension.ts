@@ -7,9 +7,9 @@ import {
 	isViewRelatedFile ,
 	changeToFileForViewFiles,
 	findEditor,
-	changeToFileForControllerFiles
+	changeToFileForControllerFiles,
+	isTurboStreamViewFile
 } from './utils';
-import * as utils from "./utils"
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -74,6 +74,36 @@ export function activate(context: ExtensionContext) {
 					window.setStatusBarMessage("Your file isn't suitable to be opened with an file extension 'turbo_stream.erb' ", 1000);
 				}
 			}
+		})
+	);
+
+	context.subscriptions.push(
+
+		commands.registerCommand('navigate-rails-files.change-to-rspec-file', async () => {
+			const editor = window.activeTextEditor;
+
+			if (editor) {
+				let activeFileName = editor.document.fileName
+
+				if ( isViewRelatedFile(activeFileName) ) {
+
+					if (isTurboStreamViewFile(activeFileName)){
+						await changeToFileForViewFiles("spec", "turbo_stream")    
+					} else {
+						await changeToFileForViewFiles("spec", "html")    
+					}
+					
+				} else if ( isModelFile(activeFileName) ) {
+					
+					await changeToFileForModelFiles("spec/models", "_spec.rb")    
+					
+				} else {
+					
+					window.setStatusBarMessage("Your file isn't suitable to be opened with an file ending '_spec.rb' ", 1000);
+
+				}
+			}
+			
 		})
 	);
 }
