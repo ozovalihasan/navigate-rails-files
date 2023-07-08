@@ -126,14 +126,6 @@ export const findActionAndController = () => {
     if (editor) {
         let activeFileName = editor.document.fileName;
         
-        let folderOfController = activeFileName.replace(/(spec|app)\/(views|controllers)/, "app/views")
-                                                    .replace(/.turbo_stream.(erb|slim|haml)_spec.rb/, "")
-                                                    .replace(/.html.(erb|slim|haml)_spec.rb/, "")
-                                                    .replace(/.turbo_stream.(erb|slim|haml)/, "")
-                                                    .replace(/.html.(erb|slim|haml)/, "")
-                                                    .replace("_controller.rb", "");
-                                                    
-
         let action = "";
         let controller = "";
 
@@ -143,11 +135,11 @@ export const findActionAndController = () => {
             
             [ action ] = fileTextToCursor.match(/def\s*\w+/g)?.slice(-1) || [ "" ];
             action = action.replace(/def\s*/, "");
-            
-            [ controller ] = folderOfController.match(/app\/views\/(.*)$/)?.slice(-1) || [ "" ];
+
+            [ controller ] = activeFileName.match(/app\/controllers\/(.*)_controller.rb$/)?.slice(-1) || [ "" ];
             
         } else if ( isViewFile(activeFileName) ) {
-            [controller, action] = folderOfController.match(/app\/views\/(.*)\/(\w+)$/)?.slice(-2) || [ "", "" ];
+            [controller, action] = activeFileName.match(/views\/(.*)\/(\w+)\.(turbo_stream|html)\.(erb|slim|haml)(_spec\.rb)*/)?.slice(1,3) || [ "", "" ];
         } else {
             window.setStatusBarMessage('There is no an action or a controller.', 1000);    
             return ["", ""];
