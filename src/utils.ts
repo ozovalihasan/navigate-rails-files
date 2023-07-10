@@ -174,6 +174,10 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
         };
         
         if ( checkFileExists(fullPath) ) {break;}
+
+        if (fileExtension === "html") {
+            fullPath = fullPath.replace("turbo_stream", "html")
+        }
     };
 
     await openDocument(fullPath)
