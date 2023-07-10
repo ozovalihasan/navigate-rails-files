@@ -312,15 +312,6 @@ suite('Utils Test Suite', () => {
                     
                     expect(openDocument.calledWith(fullPathForTests("/app/views/products/create.turbo_stream.erb"))).to.be.true;     
                 }); 
-
-                test("if the current file has a turbo_stream.erb extension", async () => {
-                    await openFileForTests('/spec/views/products/index.turbo_stream.erb_spec.rb')
-                    
-                    const openDocument = sinon.stub(utils, "openDocument");
-                    await utils.changeToFileForViewFiles("app", "html");
-                    
-                    expect(openDocument.calledWith(fullPathForTests("/app/views/products/index.html.erb"))).to.be.true;     
-                }); 
             }); 
 
             test("if file extension is 'turbo_stream'", async () => {
@@ -332,17 +323,46 @@ suite('Utils Test Suite', () => {
                 
                 expect(openDocument.calledWith(fullPathForTests("/app/views/products/index.turbo_stream.erb"))).to.be.true;     
             });
+
+            test("if a custom template engine is defined", async () => {
+                const openDocument = sinon.stub(utils, "openDocument");
+                sinon.stub(workspace, 'getConfiguration').returns(
+                    {
+                        get: sinon.stub().withArgs('template-engines').returns(["custom_engine"]),
+                    } as any
+                );
+                
+                await openFileForTests('/app/controllers/products_controller.rb')
+                utils.moveCursorToStr('A point in the action "an_action_with_a_custom_template_engine"');
+    
+                await utils.changeToFileForViewFiles("app", "html");
+                
+                expect(openDocument.calledWith(fullPathForTests("/app/views/products/an_action_with_a_custom_template_engine.html.custom_engine"))).to.be.true;     
+            });
         });
 
         suite("if folder name is 'spec'", () => {
-            test("if the file extension is 'html'", async () => {
-                await openFileForTests('/app/views/products/index.html.erb')
+            suite("if the file extension is 'html'", () => {
+                test("if action.html.erb file exists", async () => {
+                    await openFileForTests('/app/views/products/index.html.erb')
+    
+                    const openDocument = sinon.stub(utils, "openDocument");
+                    await utils.changeToFileForViewFiles("spec", "html");
+                    
+                    expect(openDocument.calledWith(fullPathForTests("/spec/views/products/index.html.erb_spec.rb"))).to.be.true;     
+                }); 
 
-                const openDocument = sinon.stub(utils, "openDocument");
-                await utils.changeToFileForViewFiles("spec", "html");
-                
-                expect(openDocument.calledWith(fullPathForTests("/spec/views/products/index.html.erb_spec.rb"))).to.be.true;     
+                test("if action.html.erb file doesn't exist", async () => {
+                    await openFileForTests('/app/controllers/products_controller.rb')
+                    utils.moveCursorToStr('A point in the action "create"');
+                    
+                    const openDocument = sinon.stub(utils, "openDocument");
+                    await utils.changeToFileForViewFiles("spec", "html");
+                    
+                    expect(openDocument.calledWith(fullPathForTests("/spec/views/products/create.turbo_stream.erb_spec.rb"))).to.be.true;     
+                }); 
             }); 
+            
 
             test("if the file extension is 'turbo_stream'", async () => {
                 await openFileForTests('/app/views/products/index.turbo_stream.erb')
@@ -353,7 +373,21 @@ suite('Utils Test Suite', () => {
                 expect(openDocument.calledWith(fullPathForTests("/spec/views/products/index.turbo_stream.erb_spec.rb"))).to.be.true;     
             }); 
 
-            
+            test("if a custom template engine is defined", async () => {
+                const openDocument = sinon.stub(utils, "openDocument");
+                sinon.stub(workspace, 'getConfiguration').returns(
+                    {
+                        get: sinon.stub().withArgs('template-engines').returns(["custom_engine"]),
+                    } as any
+                );
+                
+                await openFileForTests('/app/controllers/products_controller.rb')
+                utils.moveCursorToStr('A point in the action "an_action_with_a_custom_template_engine"');
+    
+                await utils.changeToFileForViewFiles("spec", "html");
+                
+                expect(openDocument.calledWith(fullPathForTests("/spec/views/products/an_action_with_a_custom_template_engine.html.custom_engine_spec.rb"))).to.be.true;     
+            });
         });
 
         

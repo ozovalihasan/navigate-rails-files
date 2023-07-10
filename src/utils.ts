@@ -159,19 +159,22 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
     const projectRoot = getProjectRoot();
     let fullPath = projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + ".erb" + (folderName === "spec" ? "_spec.rb" : "");
 
-    ["erb", "slim", "haml"].forEach(template_engine => {
-        fullPath.replace(/erb|slim|haml/, template_engine)
-
+    const templateEngines : string[] = workspace.getConfiguration('navigate-rails-files').get("template-engines") as string[];
+    const updatedTemplateEngines = Array.from(new Set([...templateEngines, ...["erb", "slim", "haml"]]))
+    
+    for (let template_engine of updatedTemplateEngines) {
+        fullPath = fullPath.replace(new RegExp(updatedTemplateEngines.join("|")), template_engine)
+        
         if (fileExtension === "html") {
         
             const isFileExist = checkFileExists(fullPath);
             if (!isFileExist) {
                 fullPath = fullPath.replace("html", "turbo_stream")
-            }
-        }    
-
-        if ( checkFileExists(fullPath) ) {return;}
-    });
+            };
+        };
+        
+        if ( checkFileExists(fullPath) ) {break;}
+    };
 
     await openDocument(fullPath)
     

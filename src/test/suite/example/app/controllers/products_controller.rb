@@ -18,4 +18,9 @@ class ProductsController < ApplicationController
   def edit 
     # A point in the action "edit"
   end
+
+  def an_action_with_a_custom_template_engine
+    # A point in the action "an_action_with_a_custom_template_engine"
+  end
+  
 end
