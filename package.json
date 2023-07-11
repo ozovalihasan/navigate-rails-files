@@ -61,7 +61,7 @@
       "properties": {
         "navigate-rails-files.template-engines": {
           "type": "array",
-          "default": [],
+          "default": ["erb", "slim", "haml"],
           "description": "Template engines to check file names. .erb files will be checked lastly as default if it is not included"
         },
         "navigate-rails-files.allow-to-open-rb-file": {

@@ -157,13 +157,14 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
     let [controller, action] = findActionAndController()
 
     const projectRoot = getProjectRoot();
-    let fullPath = projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + ".erb" + (folderName === "spec" ? "_spec.rb" : "");
 
     const templateEngines : string[] = workspace.getConfiguration('navigate-rails-files').get("template-engines") as string[];
-    const updatedTemplateEngines = Array.from(new Set([...templateEngines, ...["erb", "slim", "haml"]]))
+
+    let fullPath : string | null = null;
+    let setFullPath = (template_engine: string) => projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + "." + template_engine + (folderName === "spec" ? "_spec.rb" : "");
     
-    for (let template_engine of updatedTemplateEngines) {
-        fullPath = fullPath.replace(new RegExp(updatedTemplateEngines.join("|")), template_engine)
+    for (let template_engine of templateEngines) {
+        fullPath = setFullPath(template_engine);
         
         if (fileExtension === "html") {
         
@@ -173,15 +174,14 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
             };
         };
         
-        if ( checkFileExists(fullPath) ) {break;}
-
-        if (fileExtension === "html") {
-            fullPath = fullPath.replace("turbo_stream", "html")
+        if ( checkFileExists(fullPath) ) {
+            await openDocument(fullPath);
+            return;
         }
+
     };
 
-    await openDocument(fullPath)
-    
+    window.setStatusBarMessage("Any valid view file couldn't be found.", 1000);
 }
 
 export const checkFileExists = (filePath: string): boolean => {

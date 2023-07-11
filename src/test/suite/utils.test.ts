@@ -332,7 +332,7 @@ suite('Utils Test Suite', () => {
             
         });
         
-        suite("if a custom template engine is not defined", () => {
+        suite("if a custom template engine is defined", () => {
             beforeEach(() => {
                 sinon.stub(workspace, 'getConfiguration').returns(
                     {
