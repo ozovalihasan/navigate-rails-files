@@ -328,8 +328,6 @@ suite('Utils Test Suite', () => {
                 
                 expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.erb")).to.be.true;     
             });
-
-            
         });
         
         suite("if a custom template engine is defined", () => {
@@ -344,7 +342,7 @@ suite('Utils Test Suite', () => {
             
             suite("if the file extension is 'html'", () => {
 
-                test("if action.html.erb file exists", async () => {
+                test("if action.html.custom_engine file exists", async () => {
                     checkFileExists.withArgs("mock_root_folder/app/views/products/index.html.custom_engine").returns(true);
                     
                     await utils.changeToFileForViewFiles("app", "html");
@@ -368,10 +366,44 @@ suite('Utils Test Suite', () => {
                 
                 expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.custom_engine")).to.be.true;     
             });
-
-            
         });
 
+        suite("if any file with the first template engine isn't found", () => {
+            suite("if the file extension is 'html'", () => {
+
+                test("if action.html.slim file exists", async () => {
+                    checkFileExists.withArgs("mock_root_folder/app/views/products/index.html.slim").returns(true);
+                    
+                    await utils.changeToFileForViewFiles("app", "html");
+                    
+                    expect(openDocument.calledWith("mock_root_folder/app/views/products/index.html.slim")).to.be.true;     
+                }); 
+
+                test("if action.html.slim file doesn't exist", async () => {
+                    checkFileExists.withArgs("mock_root_folder/app/views/products/index.turbo_stream.slim").returns(true);
+                    
+                    await utils.changeToFileForViewFiles("app", "html");
+                    
+                    expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.slim")).to.be.true;     
+                }); 
+            }); 
+
+            test("if file extension is 'turbo_stream'", async () => {
+                checkFileExists.withArgs("mock_root_folder/app/views/products/index.turbo_stream.slim").returns(true);
+    
+                await utils.changeToFileForViewFiles("app", "turbo_stream");
+                
+                expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.slim")).to.be.true;     
+            });
+        });
         
+        test("if there is no any valid file", async () => {
+            const statusBarMessage = sinon.stub(vscode.window, "setStatusBarMessage");
+
+            await utils.changeToFileForViewFiles("app", "turbo_stream");
+            
+            expect(statusBarMessage.called).to.be.true;     
+            expect(openDocument.called).to.be.false;     
+        });
     })
 });
