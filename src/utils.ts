@@ -36,7 +36,7 @@ export const findModelName = () => {
 
 export const openDocument = async (filePath: string, callback: Function | null = null) => {
     const editor = findEditor();
-    const isFileExist = checkFileExists(filePath)
+    const isFileExist = checkFileExists(filePath);
     if (!isFileExist) {
         window.setStatusBarMessage(`Your file(${filePath}) doesn't exist.`, 1000);    
         return;
@@ -63,7 +63,7 @@ export const openDocument = async (filePath: string, callback: Function | null =
 export const getProjectRoot = () => {
     const activeFilePath = (window.activeTextEditor as TextEditor).document.uri.path;
 
-    return (activeFilePath.match(/(.*\/)(app|spec)\/(models|views|controllers)/)?.slice(1)[0])
+    return (activeFilePath.match(/(.*\/)(app|spec)\/(models|views|controllers)/)?.slice(1)[0]);
 };
 
 export const isViewRelatedFile = (fileName: string) : Boolean => (isViewFile(fileName) || isControllerFile(fileName));
@@ -88,7 +88,7 @@ export const moveCursorToStr = (str: string) => {
     const wordPosition = document.positionAt(document.getText().indexOf(str));
     const newPosition = new Position(wordPosition.line, wordPosition.character + str.length);
     editor.selection = new Selection(newPosition, newPosition);
-}
+};
 
 export const findEditor = (): TextEditor | undefined => {
     const editor = window.activeTextEditor;
@@ -98,7 +98,7 @@ export const findEditor = (): TextEditor | undefined => {
     }
 
     return editor;
-}
+};
 
 export const moveCursorToAction = (action: string) => {
     if (inActionBlock(action)) { return; }
@@ -112,7 +112,7 @@ export const getTextUntilCursor = () => {
 
     const cursorPosition = editor.selection.active; 
     return editor.document.getText(new Range(0, 0, cursorPosition.line, cursorPosition.character));
-}
+};
 
 export const inActionBlock = (action: string) => {
     const editor = findEditor();
@@ -159,23 +159,23 @@ export const findActionAndController = () => {
 };
 
 export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileExtension: "html" | "turbo_stream") => {
-    let [controller, action] = findActionAndController()
+    let [controller, action] = findActionAndController();
 
     const projectRoot = getProjectRoot();
 
     const templateEngines : string[] = workspace.getConfiguration('navigate-rails-files').get("template-engines") as string[];
 
     let fullPath : string | null = null;
-    let setFullPath = (template_engine: string) => projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + "." + template_engine + (folderName === "spec" ? "_spec.rb" : "");
+    let setFullPath = (templateEngine: string) => projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + "." + templateEngine + (folderName === "spec" ? "_spec.rb" : "");
     
-    for (let template_engine of templateEngines) {
-        fullPath = setFullPath(template_engine);
+    for (let templateEngine of templateEngines) {
+        fullPath = setFullPath(templateEngine);
         
         if (fileExtension === "html") {
         
             const isFileExist = checkFileExists(fullPath);
             if (!isFileExist) {
-                fullPath = fullPath.replace("html", "turbo_stream")
+                fullPath = fullPath.replace("html", "turbo_stream");
             };
         };
         
@@ -187,8 +187,8 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
     };
 
     window.setStatusBarMessage("Any valid view file couldn't be found.", 1000);
-}
+};
 
 export const checkFileExists = (filePath: string): boolean => {
-    return fs.existsSync(filePath)
-}
+    return fs.existsSync(filePath);
+};

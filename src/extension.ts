@@ -16,8 +16,8 @@ export const navigateToFile = async (pairs: PairsType) => {
 
 		for (let pair of pairs) {
 			if (pair.checkFunction(activeFileName)) {
-				await pair.callback()
-				return
+				await pair.callback();
+				return;
 			}
 		}
 		
