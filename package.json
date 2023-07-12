@@ -3,7 +3,7 @@
   "displayName": "Navigate Rails Files",
   "description": "Navigate Rails files quickly",
   "version": "0.0.1",
-  "publisher": "Hasan Ozovali",
+  "publisher": "Hasan-Ozovali",
   "license": "MIT",
   "engines": {
     "vscode": "^1.79.0"
