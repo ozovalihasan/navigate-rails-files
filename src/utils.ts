@@ -139,7 +139,7 @@ export const findActionAndController = () => {
             [ controller ] = activeFileName.match(/app\/controllers\/(.*)_controller.rb$/)?.slice(-1) || [ "" ];
             
         } else if ( isViewFile(activeFileName) ) {
-            [controller, action] = activeFileName.match(/views\/(.*)\/(\w+)\.(turbo_stream|html)\.(erb|slim|haml)(_spec\.rb)*/)?.slice(1,3) || [ "", "" ];
+            [controller, action] = activeFileName.match(/(app|spec)\/views\/(.*)\/(\w+)\.(turbo_stream|html)\.(erb|slim|haml)(_spec\.rb)*/)?.splice(2,2) || [ "", "" ];
         } else {
             window.setStatusBarMessage('There is no an action or a controller.', 1000);    
             return ["", ""];
