@@ -2,7 +2,7 @@ import { window, Range, Selection, Position, workspace, TextEditor, Uri } from '
 import {resolve} from "path";
 import * as fs from 'fs'; // In NodeJS: 'const fs = require('fs')'
 
-export const changeToFileForModelFiles = async (folderName: string, fileExtension: string) => {
+export const changeToFileForModelFiles = async (folderName: "app" | "spec") => {
     const modelName = findModelName();
     if (!modelName) { 
         window.setStatusBarMessage("There is no a model name", 1000);
@@ -10,7 +10,7 @@ export const changeToFileForModelFiles = async (folderName: string, fileExtensio
     }
     const projectRoot = getProjectRoot();
     
-    await openDocument(projectRoot + folderName + "/" + modelName + fileExtension);
+    await openDocument(projectRoot + folderName + "/models/" + modelName + (folderName === "app" ? ".rb" : "_spec.rb"));
 };
 
 export const changeToFileForControllerFiles = async () => {
@@ -106,12 +106,19 @@ export const moveCursorToAction = (action: string) => {
     moveCursorToStr(`def ${action}`);
 };
 
+export const getTextUntilCursor = () => {
+    const editor = findEditor();
+    if (!editor) { return ""; }
+
+    const cursorPosition = editor.selection.active; 
+    return editor.document.getText(new Range(0, 0, cursorPosition.line, cursorPosition.character));
+}
+
 export const inActionBlock = (action: string) => {
     const editor = findEditor();
     if (!editor) { return; }
 
-    const cursorPosition = editor.selection.active; 
-    const fileTextToCursor = editor.document.getText(new Range(0, 0, cursorPosition.line, cursorPosition.character));
+    const fileTextToCursor = getTextUntilCursor();
 
     if (fileTextToCursor.match(new RegExp("(\\s\*)def\\s*" + action + "\\s*\\n(.*\\n)*" + "\\1end"))) { return false;}
     if (fileTextToCursor.match(new RegExp("(\\s\*)def\\s*" + action + "\\s*;\\s*end"))) { return false;}
@@ -130,11 +137,9 @@ export const findActionAndController = () => {
         let controller = "";
 
         if ( isControllerFile(activeFileName) ) {
-            const cursorPosition = editor.selection.active; 
-            const fileTextToCursor = editor.document.getText(new Range(0, 0, cursorPosition.line, cursorPosition.character));
+            const fileTextToCursor = getTextUntilCursor();
             
-            [ action ] = fileTextToCursor.match(/def\s*\w+/g)?.slice(-1) || [ "" ];
-            action = action.replace(/def\s*/, "");
+            [ action ] = fileTextToCursor.match(/def\s*(\w+)(?!.*def\s*\w+)/s)?.slice(1) || [ "" ];
 
             [ controller ] = activeFileName.match(/app\/controllers\/(.*)_controller.rb$/)?.slice(-1) || [ "" ];
             

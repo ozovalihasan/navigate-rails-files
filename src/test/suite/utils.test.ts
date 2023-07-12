@@ -151,6 +151,16 @@ suite('Utils Test Suite', () => {
         expect(editor).to.be.ok
     });
 
+    test('Test getTextUntilCursor function', async () => {
+        await openFileForTests('/app/controllers/products_controller.rb')
+        
+        utils.moveCursorToStr('A point above the action "index"');
+        expect(utils.getTextUntilCursor()).to.be.equal(
+            'class ProductsController < ApplicationController\n' +
+            '  # A point above the action "index"'
+        )
+    });
+
     suite('Test findModelName function', () => {
         test('for model file', async () => {
             await openFileForTests('/app/models/product.rb')
@@ -263,7 +273,7 @@ suite('Utils Test Suite', () => {
             sinon.stub(utils, "findModelName").returns("product");
             const openDocument = sinon.stub(utils, "openDocument");
 
-            await utils.changeToFileForModelFiles("app/models", ".rb");
+            await utils.changeToFileForModelFiles("app");
             expect(openDocument.called).to.be.true;
         });
 
@@ -271,7 +281,7 @@ suite('Utils Test Suite', () => {
             sinon.stub(utils, "findModelName");
             const statusBarMessage = sinon.stub(vscode.window, "setStatusBarMessage");
 
-            await utils.changeToFileForModelFiles("app/models", ".rb");
+            await utils.changeToFileForModelFiles("app");
             expect(statusBarMessage.called).to.be.true;
         });
     })
