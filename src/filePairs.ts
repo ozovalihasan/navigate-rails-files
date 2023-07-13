@@ -1,4 +1,4 @@
-import { changeToFileForControllerFiles, changeToFileForModelFiles, changeToFileForViewFiles, isModelFile, isTurboStreamViewFile, isViewRelatedFile } from "./utils";
+import { changeToFileForComponents, changeToFileForControllerFiles, changeToFileForModelFiles, changeToFileForViewFiles, isComponentFile, isModelFile, isTurboStreamViewFile, isViewRelatedFile } from "./utils";
 
 export type PairType = {
     checkFunction: (fileName: string) => Boolean;
@@ -19,7 +19,13 @@ export const rbPairs: PairsType = [
         callback:  async () => {
                 await changeToFileForModelFiles("app");    
         } 
-    }
+    },
+    {
+        checkFunction: isComponentFile, 
+        callback : async () => {
+            await changeToFileForComponents(".rb");
+        }
+    },
 ];
 
 export const htmlPairs: PairsType = [
@@ -27,6 +33,12 @@ export const htmlPairs: PairsType = [
         checkFunction: isViewRelatedFile, 
         callback : async () => {
             await changeToFileForViewFiles("app", "html");
+        }
+    },
+    {
+        checkFunction: isComponentFile, 
+        callback : async () => {
+            await changeToFileForComponents(".html");
         }
     },
 ];
@@ -57,6 +69,12 @@ export const rspecPairs: PairsType = [
         checkFunction: isModelFile, 
         callback : async () => {
             await changeToFileForModelFiles("spec");
+        }
+    },
+    {
+        checkFunction: isComponentFile, 
+        callback : async () => {
+            await changeToFileForComponents("_spec.rb");
         }
     },
 ];

@@ -286,6 +286,191 @@ suite('Utils Test Suite', () => {
         });
     });
     
+    suite('Test changeToFileForComponents function', () => {
+        let checkFileExists = null as any;
+        let openDocument = null as any;
+
+        beforeEach(() => {
+            checkFileExists = sinon.stub(utils, "checkFileExists").returns(false);
+            
+            openDocument = sinon.stub(utils, "openDocument");
+        });
+        
+        suite('if the current file is the ruby file of a component', () => {    
+            
+            beforeEach(() => {
+                const documentStub = {
+                    fileName: 'upper_folder/mock_root_folder/app/components/mock_component.rb',
+                };
+                
+                sinon.stub(vscode.window, 'activeTextEditor').get(() => ({
+                    document: documentStub
+                }));
+            });
+
+            test('if view template will be opened', async () => {
+                checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component.html.erb").returns(true);
+                        
+                await utils.changeToFileForComponents(".html");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.html.erb")).to.be.true;     
+            });
+
+            
+            test('if view template will be opened and a custom template engine is defined', async () => {
+                const getMock: {"template-engines": any, "use-view-components-sidecar"?: any} = {"template-engines": ["erb", "custom_engine"]};
+                const getConfiguration = sinon.stub(workspace, 'getConfiguration').returns(
+                    {
+                        get: (key: string) => (getMock[key as "template-engines" | "use-view-components-sidecar"]) ,
+                    } as any
+                );
+                // // getMock.withArgs('template-engines').returns(["erb", "custom_engine"]);
+                // // getMock.withArgs("use-view-components-sidecar").returns(true);
+                // getMock["use-view-components-sidecar"] = true;
+
+                checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component.html.custom_engine").returns(true);
+                        
+                await utils.changeToFileForComponents(".html");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.html.custom_engine")).to.be.true;     
+            });
+
+            test("if a view template will be opened but it doesn't exist", async () => {
+                const statusBarMessage = sinon.stub(vscode.window, "setStatusBarMessage");
+
+                await utils.changeToFileForComponents(".html");
+                
+                expect(statusBarMessage.called).to.be.true;     
+            });
+            
+            test('if the ruby file of a component will be opened', async () => {
+                await utils.changeToFileForComponents(".rb");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;     
+            });
+
+            test('if the rspec file of a component will be opened', async () => {
+                await utils.changeToFileForComponents("_spec.rb");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/spec/components/mock_component_spec.rb")).to.be.true;     
+            });
+        });
+
+        suite("if the component name doesn't include a '_'", () => {    
+            beforeEach(() => {
+                const documentStub = {
+                    fileName: 'upper_folder/mock_root_folder/app/components/mock_name/component.html.erb',
+                };
+                
+                sinon.stub(vscode.window, 'activeTextEditor').get(() => ({
+                    document: documentStub
+                }));
+            });
+
+            test('if the ruby file of a component will be opened', async () => {
+                await utils.changeToFileForComponents(".rb");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_name/component.rb")).to.be.true;     
+            });
+
+        });
+
+        suite('if the current file is the view file(html.erb) of a component', () => {    
+            beforeEach(() => {
+                const documentStub = {
+                    fileName: 'upper_folder/mock_root_folder/app/components/mock_component.html.erb',
+                };
+                
+                sinon.stub(vscode.window, 'activeTextEditor').get(() => ({
+                    document: documentStub
+                }));
+            });
+
+            test('if the ruby file of a component will be opened', async () => {
+                await utils.changeToFileForComponents(".rb");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;     
+            });
+
+        });
+
+        suite('if the current file is the view file(html.haml) of a component', () => {    
+            beforeEach(() => {
+                const documentStub = {
+                    fileName: 'upper_folder/mock_root_folder/app/components/mock_component.html.haml',
+                };
+                
+                sinon.stub(vscode.window, 'activeTextEditor').get(() => ({
+                    document: documentStub
+                }));
+            });
+
+            test('if the ruby file of a component will be opened', async () => {
+                await utils.changeToFileForComponents(".rb");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;     
+            });
+
+        });
+
+        suite('if the current file is the rspec file of a component', () => {    
+            beforeEach(() => {
+                const documentStub = {
+                    fileName: 'upper_folder/mock_root_folder/spec/components/mock_component_spec.rb',
+                };
+                
+                sinon.stub(vscode.window, 'activeTextEditor').get(() => ({
+                    document: documentStub
+                }));
+            });
+
+            test('if the ruby file of a component will be opened', async () => {
+                await utils.changeToFileForComponents(".rb");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;     
+            });
+
+        });
+
+        suite('if sidecar directories is used for components', () => {    
+            let updateActiveFileName: any;
+            
+            beforeEach(() => {
+                updateActiveFileName = (path: string) => {
+                    sinon.stub(vscode.window, 'activeTextEditor').get(() => ({
+                        document: {
+                            fileName: path,
+                        }
+                    }));
+                }
+                
+                sinon.stub(workspace, 'getConfiguration').returns(
+                    {
+                        get: (key: string) => (({"template-engines": ["erb", "custom_engine"], "use-view-components-sidecar": true})[key]) ,
+                    } as any
+                );
+            });
+
+            test('if a view template will be opened', async () => {
+                checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb").returns(true);
+                updateActiveFileName("upper_folder/mock_root_folder/app/components/mock_component.rb")
+                
+                await utils.changeToFileForComponents(".html");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb")).to.be.true;     
+            });
+
+            test('if a ruby file of a component will be opened', async () => {
+                updateActiveFileName("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb")
+                
+                await utils.changeToFileForComponents(".rb");
+                
+                expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;     
+            });
+
+        });
+    });
+    
     test("Test changeToFileForControllerFiles function", async () => {
         await openFileForTests('/app/views/products/index.html.erb');
         

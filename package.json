@@ -64,6 +64,11 @@
           "default": ["erb", "slim", "haml"],
           "description": "Template engines to check file names. .erb files will be checked lastly as default if it is not included"
         },
+        "navigate-rails-files.use-view-components-sidecar": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable to use view components in the sidecar directory"
+        },
         "navigate-rails-files.allow-to-open-rb-file": {
           "type": "boolean",
           "default": true,

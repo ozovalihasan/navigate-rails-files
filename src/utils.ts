@@ -80,6 +80,8 @@ export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|sp
 
 export const isTestFile = (fileName: string) => Boolean(fileName.match(/spec\/.*_spec.rb/));
 
+export const isComponentFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/components/));
+
 export const moveCursorToStr = (str: string) => {
     const editor = findEditor();
     if (!editor) { return; }
@@ -157,6 +159,57 @@ export const findActionAndController = () => {
     }
     
 };
+
+export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" | "_spec.rb") => {
+    let folderName = "";
+    switch(fileExtension) {
+        case ".rb":
+        case ".html":
+            folderName = "app";
+            break;
+        case "_spec.rb":
+            folderName = "spec";
+            break;
+    } 
+    
+    const editor = findEditor();
+    if (!editor) { return; }
+
+    let activeFileName = editor.document.fileName;
+    
+    const templateEngines : string[] = workspace.getConfiguration('navigate-rails-files').get("template-engines") as string[];
+
+    activeFileName = activeFileName.replace(/\/(app|spec)\//, `/${folderName}/`);
+    let componentPath = /(?<componentName>.*?)(_spec\.rb|\.html|\.rb)/.exec(activeFileName)?.groups?.componentName || "";
+
+    const useSidecar= workspace.getConfiguration('navigate-rails-files').get("use-view-components-sidecar") as boolean;
+    if (useSidecar && activeFileName.match(/\.html\./) && activeFileName.match(/(\/\w+)\1/)) {
+        componentPath = componentPath.replace(/\/\w+$/, "")
+    }
+    
+    if (useSidecar && fileExtension === ".html") {
+        componentPath += componentPath.match(/\/\w+$/)?.at(0)
+    }
+    
+    let fullPath = componentPath + fileExtension;
+    
+    if (fileExtension === ".html") {
+        for (let templateEngine of templateEngines) {
+            let fullPathWithTemplateEngine = fullPath + "." + templateEngine;
+            
+            if ( checkFileExists(fullPathWithTemplateEngine) ) {
+                await openDocument(fullPathWithTemplateEngine);
+                
+                return;
+            }
+        };
+
+        window.setStatusBarMessage("Any valid view file couldn't be found.", 1000);
+    } else if (fileExtension === ".rb" || (fileExtension === "_spec.rb")){
+        await openDocument(fullPath);
+    };
+};
+
 
 export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileExtension: "html" | "turbo_stream") => {
     let [controller, action] = findActionAndController();
