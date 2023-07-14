@@ -1,6 +1,6 @@
 import { window, Range, Selection, Position, workspace, TextEditor, Uri } from 'vscode';
 import {resolve} from "path";
-import * as fs from 'fs'; // In NodeJS: 'const fs = require('fs')'
+import * as fs from 'fs';
 
 export const changeToFileForModelFiles = async (folderName: "app" | "spec") => {
     const modelName = findModelName();
@@ -17,7 +17,7 @@ export const changeToFileForControllerFiles = async () => {
     let [controller, action] = findActionAndController();
     if (!controller || !action){
         window.setStatusBarMessage("A controller and an action couldn't be found.", 1000);    
-        return
+        return;
     }
 	
     const workspaceFolder = getProjectRoot();
@@ -27,7 +27,6 @@ export const changeToFileForControllerFiles = async () => {
 
 export const findModelName = () => {
     let activeFileName = getActiveFileName();
-    
     if (!activeFileName) {return;}
 
     const modelName = activeFileName.replace("_spec.rb", "")
@@ -194,7 +193,7 @@ export const getActiveFileName = () => {
     if (!editor) { return; }
 
     return editor.document.fileName;
-}
+};
 
 export const isSidecarUsedForComponents = () => workspace.getConfiguration('navigate-rails-files').get("use-view-components-sidecar") as boolean;
 
@@ -220,11 +219,11 @@ export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" |
 
     const useSidecar = isSidecarUsedForComponents();
     if (useSidecar && activeFileName.match(/\.html\./) && activeFileName.match(/(\/\w+)\1/)) {
-        componentPath = componentPath.replace(/\/\w+$/, "")
+        componentPath = componentPath.replace(/\/\w+$/, "");
     }
     
     if (useSidecar && fileExtension === ".html") {
-        componentPath += componentPath.match(/\/\w+$/)?.at(0)
+        componentPath += componentPath.match(/\/\w+$/)?.at(0);
     }
     
     let fullPath = componentPath + fileExtension;
@@ -251,7 +250,7 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
     let [controller, action] = findActionAndController();
     if (!controller){
         window.setStatusBarMessage("Any valid view file couldn't be found.", 1000);    
-        return
+        return;
     }
 
     const projectRoot = getProjectRoot();

@@ -368,7 +368,7 @@ suite('Utils Test Suite', () => {
         suite('if the current file is the ruby file of a component', () => {    
             
             beforeEach(() => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb');
             });
 
             test('if view template will be opened', async () => {
@@ -412,7 +412,7 @@ suite('Utils Test Suite', () => {
 
         suite("if the component name doesn't include a '_'", () => {    
             beforeEach(() => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_name/component.html.erb')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_name/component.html.erb');
             });
 
             test('if the ruby file of a component will be opened', async () => {
@@ -425,7 +425,7 @@ suite('Utils Test Suite', () => {
 
         suite('if the current file is the view file(html.erb) of a component', () => {    
             beforeEach(() => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.html.erb')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.html.erb');
             });
 
             test('if the ruby file of a component will be opened', async () => {
@@ -438,7 +438,7 @@ suite('Utils Test Suite', () => {
 
         suite('if the current file is the view file(html.haml) of a component', () => {    
             beforeEach(() => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.html.haml')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.html.haml');
             });
 
             test('if the ruby file of a component will be opened', async () => {
@@ -451,7 +451,7 @@ suite('Utils Test Suite', () => {
 
         suite('if the current file is the rspec file of a component', () => {    
             beforeEach(() => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/spec/components/mock_component_spec.rb')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/spec/components/mock_component_spec.rb');
             });
 
             test('if the ruby file of a component will be opened', async () => {
@@ -465,11 +465,11 @@ suite('Utils Test Suite', () => {
         suite('if sidecar directories is used for components', () => {    
             
             beforeEach(() => {
-                sinon.stub(utils, "isSidecarUsedForComponents").returns(true)
+                sinon.stub(utils, "isSidecarUsedForComponents").returns(true);
             });
 
             test('if a view template(html.erb) will be opened', async () => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb');
                 checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb").returns(true);
                 
                 await utils.changeToFileForComponents(".html");
@@ -478,7 +478,7 @@ suite('Utils Test Suite', () => {
             });
 
             test('if a view template(html.slim) will be opened', async () => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb');
                 checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim").returns(true);
                 
                 await utils.changeToFileForComponents(".html");
@@ -487,28 +487,28 @@ suite('Utils Test Suite', () => {
             });
 
             test('if a ruby file of a component will be opened and a view template(html.erb) is the current file', async () => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb');
                 await utils.changeToFileForComponents(".rb");
                 
                 expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;     
             });
 
             test('if a ruby file of a component will be opened and a view template(html.slim) is the current file', async () => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim');
                 await utils.changeToFileForComponents(".rb");
                 
                 expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;     
             });
             
             test('if a rspec file of a component will be opened and a view template(html.erb) is the current file', async () => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb');
                 await utils.changeToFileForComponents("_spec.rb");
                 
                 expect(openDocument.calledWith("upper_folder/mock_root_folder/spec/components/mock_component_spec.rb")).to.be.true;     
             });
 
             test('if a rspec file of a component will be opened and a view template(html.slim) is the current file', async () => {
-                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim')
+                sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim');
                 await utils.changeToFileForComponents("_spec.rb");
                 
                 expect(openDocument.calledWith("upper_folder/mock_root_folder/spec/components/mock_component_spec.rb")).to.be.true;     
@@ -545,7 +545,7 @@ suite('Utils Test Suite', () => {
     suite("Test isSidecarUsedForComponents function", () => {
         test("it will be false as default", () => {
             expect(utils.isSidecarUsedForComponents()).to.be.false;    
-        })
+        });
 
         test("it can be changed by help of configuration", () => {
             sinon.stub(workspace, 'getConfiguration').returns(
@@ -555,7 +555,7 @@ suite('Utils Test Suite', () => {
             );
 
             expect(utils.isSidecarUsedForComponents()).to.be.true;
-        })
+        });
         
     });
 
@@ -601,7 +601,7 @@ suite('Utils Test Suite', () => {
         
         suite("if a custom template engine is defined", () => {
             beforeEach(() => {
-                sinon.stub(utils, "getTemplateEngines").returns(["erb", "custom_engine"])
+                sinon.stub(utils, "getTemplateEngines").returns(["erb", "custom_engine"]);
             });
 
             
