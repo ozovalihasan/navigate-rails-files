@@ -138,9 +138,6 @@ export const getTextUntilCursor = () => {
 };
 
 export const inActionBlock = (action: string) => {
-    const editor = findEditor();
-    if (!editor) { return; }
-
     const fileTextToCursor = getTextUntilCursor();
 
     if ( fileTextToCursor.match( setRegExp(/(\s*)def\s*/, action, /\s*\n(.*\n)*\1end/) ) ) { 
