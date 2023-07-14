@@ -64,7 +64,7 @@ export const openDocument = async (filePath: string, callback: Function | null =
 export const getProjectRoot = () => {
     const activeFilePath = (window.activeTextEditor as TextEditor).document.uri.path;
 
-    return (activeFilePath.match(/(.*\/)(app|spec)\/(models|views|controllers)/)?.slice(1)[0]);
+    return (activeFilePath.match(/(?<projectRoot>.*\/)(app|spec)\/(models|views|controllers)/)?.groups?.projectRoot);
 };
 
 export const isViewRelatedFile = (fileName: string) : Boolean => (isViewFile(fileName) || isControllerFile(fileName));
@@ -74,11 +74,27 @@ export const isViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isT
 export const isControllerFile = (fileName: string) => Boolean(fileName.match(/app\/controllers\/.*_controller.rb/));
 
 export const isHTMLViewFile = (fileName: string) => Boolean(
-    fileName.match(new RegExp(/(app|spec)\/views\/.*\.html\./.source + "(" +  getTemplateEngines().join("|") + ")"))
+    fileName.match( setRegExp( /(app|spec)\/views\/.*\.html\./, getTemplateEngines() ) )
+);
+
+export const setRegExp = (...arr: (string|RegExp|string[])[]) => (
+    new RegExp(
+        arr.map((chunk) => {
+            if (chunk instanceof RegExp) {
+                return chunk.source;
+            } else if (chunk instanceof Array) {
+                return "(" + chunk.join("|") + ")";
+            } else {
+                return chunk;
+            }
+        }).join("")
+    )
 );
 
 export const isTurboStreamViewFile = (fileName: string) => Boolean(
-    fileName.match(new RegExp(/(app|spec)\/views\/.*\.turbo_stream\./.source + "(" + getTemplateEngines().join("|") + ")"))
+    fileName.match(
+        setRegExp( /(app|spec)\/views\/.*\.turbo_stream\./, getTemplateEngines() )
+    )
 );
 
 export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/models/));
@@ -127,11 +143,16 @@ export const inActionBlock = (action: string) => {
 
     const fileTextToCursor = getTextUntilCursor();
 
-    if (fileTextToCursor.match(new RegExp("(\\s\*)def\\s*" + action + "\\s*\\n(.*\\n)*" + "\\1end"))) { return false;}
-    if (fileTextToCursor.match(new RegExp("(\\s\*)def\\s*" + action + "\\s*;\\s*end"))) { return false;}
-    if (fileTextToCursor.match(new RegExp("(\\s\*)def\\s*" + action))) { return true;}
+    if ( fileTextToCursor.match( setRegExp(/(\s*)def\s*/, action, /\s*\n(.*\n)*\1end/) ) ) { 
+        return false;
+    } else if ( fileTextToCursor.match( setRegExp(/(\s*)def\s*/, action, /\s*;\s*end/) ) ) { 
+        return false;
+    } else if ( fileTextToCursor.match( setRegExp(/(\s*)def\s*/, action) ) ) { 
+        return true;
+    } else {
+        return false;
+    }
     
-    return false;
 };
 
 export const findActionAndController = () => {
@@ -154,12 +175,10 @@ export const findActionAndController = () => {
     } else if ( isViewFile(activeFileName) ) {
         (
             {controller, action} = activeFileName.match(
-                new RegExp(
-                    /(app|spec)\/views\/(?<controller>.*)\/(?<action>\w+)\.(turbo_stream|html)\./.source + 
-                    "(" +
-                    getTemplateEngines().join("|") +
-                    ")" +
-                    /(_spec\.rb)*/.source
+                setRegExp(
+                    /(app|spec)\/views\/(?<controller>.*)\/(?<action>\w+)\.(turbo_stream|html)\./, 
+                    getTemplateEngines(),
+                    /(_spec\.rb)*/ 
                 )
             )?.groups || {controller: "", action: ""}
         );
