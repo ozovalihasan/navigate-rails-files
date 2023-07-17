@@ -294,7 +294,7 @@ suite('Utils Test Suite', () => {
     });
 
     test('Test getProjectRoot function', () => {
-        sinon.stub((window.activeTextEditor as TextEditor).document.uri, "path").value("mock_project_root_folder/app/controllers/product_controller.rb");
+        sinon.stub(utils, "getActiveFileName").returns("mock_project_root_folder/app/controllers/product_controller.rb");
 
         utils.getProjectRoot();
         expect(utils.getProjectRoot()).to.equal("mock_project_root_folder/");
@@ -517,11 +517,31 @@ suite('Utils Test Suite', () => {
         });
     });
     
-    test("Test changeToFileForControllerFiles function", async () => {
+    suite("Test changeToFileForControllerFiles function", () => {
+        test("if the current file is a controller file ", async () => {
+            sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/controllers/mock_controller.rb');
+            
+            const openDocument = sinon.stub(utils, "openDocument");
+            await utils.changeToFileForControllerFiles("spec");
+            
+            expect(openDocument.calledWith('upper_folder/mock_root_folder/spec/requests/mock_spec.rb')).to.be.true;     
+        });
+
+        test("if the current file is a request test file ", async () => {
+            sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/spec/requests/mock_spec.rb');
+            
+            const openDocument = sinon.stub(utils, "openDocument");
+            await utils.changeToFileForControllerFiles("app");
+            
+            expect(openDocument.calledWith('upper_folder/mock_root_folder/app/controllers/mock_controller.rb')).to.be.true;     
+        });
+    });
+
+    test("Test changeToFileForControllerFilesWithAction function", async () => {
         sinon.stub(utils, "findActionAndController").returns(["products", "index"]);
         
         const openDocument = sinon.stub(utils, "openDocument");
-        await utils.changeToFileForControllerFiles();
+        await utils.changeToFileForControllerFilesWithAction();
         
         expect(openDocument.calledWith(fullPathForTests("/app/controllers/products_controller.rb"))).to.be.true;     
     });

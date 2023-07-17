@@ -12,13 +12,8 @@ import { afterEach, beforeEach } from 'mocha';
 const testFolderLocation = "/../../../src/test/suite/example";
 
 const openFileForTests = async(filePath: string = '/app/controllers/products_controller.rb') => {
-	const uri = Uri.file(
-		path.join(__dirname + testFolderLocation + filePath)
-	);
-	
-	const document = await workspace.openTextDocument(uri);
+	const document = await workspace.openTextDocument(fullPathForTests(filePath));
 	await window.showTextDocument(document);
-	
 };
 
 const fullPathForTests = (filePath: string) => (path.resolve(__dirname + testFolderLocation + filePath));
@@ -41,7 +36,7 @@ suite('Extension Test Suite', () => {
 		suite("for view related files", () => {
 			test('if a view file is opened', async () => {
 				await openFileForTests('/app/views/products/index.html.erb');
-		
+				
 				await commands.executeCommand('navigate-rails-files.open-rb-file');
 				
 				let editor = utils.findEditor();
@@ -144,7 +139,7 @@ suite('Extension Test Suite', () => {
 			});
 		});
 			
-		suite('for controllers', async () => {
+		suite('for controllers', () => {
 			test('if there is a html.erb of the action', async () => {
 				await openFileForTests('/app/controllers/products_controller.rb');
 				utils.moveCursorToStr('A point in the action "index"');
@@ -251,7 +246,7 @@ suite('Extension Test Suite', () => {
 			});
 		});
 			
-		suite('for controllers', async () => {
+		suite('for controllers', () => {
 			test('if there is a turbo_stream.erb file of the action', async () => {
 				await openFileForTests('/app/controllers/products_controller.rb');
 				utils.moveCursorToStr('A point in the action "index"');
@@ -387,7 +382,7 @@ suite('Extension Test Suite', () => {
 			});
 		});
 			
-		suite('for controllers', async () => {
+		suite('for controllers', () => {
 			test('if there is a html.erb_spec.rb file of the action', async () => {
 				await openFileForTests('/app/controllers/products_controller.rb');
 				utils.moveCursorToStr('A point in the action "index"');
@@ -397,19 +392,7 @@ suite('Extension Test Suite', () => {
 				let editor = utils.findEditor();
 				if (!editor) { return; }
 		
-				expect(editor.document.fileName).to.be.equal(fullPathForTests("/spec/views/products/index.html.erb_spec.rb"));
-			});
-
-			test('if there is no a html.erb_spec.rb file of the action', async () => {
-				await openFileForTests('/app/controllers/products_controller.rb');
-				utils.moveCursorToStr('A point in the action "create"');
-
-				await commands.executeCommand('navigate-rails-files.change-to-rspec-file');
-				
-				let editor = utils.findEditor();
-				if (!editor) { return; }
-		
-				expect(editor.document.fileName).to.be.equal(fullPathForTests('/spec/views/products/create.turbo_stream.erb_spec.rb'));
+				expect(editor.document.fileName).to.be.equal(fullPathForTests("/spec/requests/products_spec.rb"));
 			});
 		});
 
