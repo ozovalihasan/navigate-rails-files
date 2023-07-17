@@ -26,13 +26,13 @@ export const changeToFileForControllerFiles = async (folderName: "app" | "spec")
     let fullPath = "";
     
     if (folderName === "app"){
-        fullPath = workspaceFolder + "app/controllers/" + controllerName + "_controller.rb"
+        fullPath = workspaceFolder + "app/controllers/" + controllerName + "_controller.rb";
     } else {
-        fullPath = workspaceFolder + "spec/requests/" + controllerName + "_spec.rb"
+        fullPath = workspaceFolder + "spec/requests/" + controllerName + "_spec.rb";
     }
 
     await openDocument(fullPath);
-}
+};
 
 export const changeToFileForControllerFilesWithAction = async () => {
     let [controller, action] = findActionAndController();

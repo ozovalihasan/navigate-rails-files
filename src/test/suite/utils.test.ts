@@ -250,8 +250,8 @@ suite('Utils Test Suite', () => {
     test('Test setRegExp function', async () => {
         expect(utils.setRegExp("mock_string", /mock_regexp_with_special_characters_like(\/\s\w+.*)/, ["mock", "array"]).source).to.be.equal(
             /mock_stringmock_regexp_with_special_characters_like(\/\s\w+.*)(mock|array)/.source
-        )
-    })
+        );
+    });
     
     test('Test moveCursorToStr function', async () => {
         await openFileForTests('/app/controllers/products_controller.rb');
