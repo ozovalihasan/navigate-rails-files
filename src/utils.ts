@@ -86,12 +86,19 @@ export const getProjectRoot = () => {
   return (activeFilePath?.match(/(?<projectRoot>.*\/)(app|spec)\/(models|views|controllers|requests)/)?.groups?.projectRoot);
 };
 
-export const setRegExp = (...arr: (string|RegExp|string[])[]) => (
+export const setRegExp = (...arr: (string|RegExp|(string|RegExp)[])[]) => (
   new RegExp(
     arr.map((chunk) => {
       if (chunk instanceof RegExp) {
         return chunk.source;
       } else if (chunk instanceof Array) {
+        chunk = chunk.map((el: string | RegExp ) => {
+                  if (el instanceof RegExp ){
+                    return el.source
+                  } else {
+                    return el
+                  }
+                })
         return "(" + chunk.join("|") + ")";
       } else {
         return chunk;
