@@ -33,14 +33,13 @@ const runGivenCommand = (command: string) => (
 
 suite('Extension Test Suite', () => {
 	beforeEach(() => {
-        commands.executeCommand('workbench.action.closeActiveEditor');
-
-    });
+    commands.executeCommand('workbench.action.closeActiveEditor');
+  });
 
 	afterEach(() => {
-        commands.executeCommand('workbench.action.closeActiveEditor');
+    commands.executeCommand('workbench.action.closeActiveEditor');
 		sinon.restore();
-    });
+  });
 
 	
 	window.showInformationMessage('Start all tests.');
@@ -62,9 +61,9 @@ suite('Extension Test Suite', () => {
 			
 			test('if a controller file is opened', async () => {
 				const openedFileName = await runCommandForTest(
-											'/app/controllers/products_controller.rb', 
-											() => utils.moveCursorToStr('A point below the action "index"')
-										);
+                                '/app/controllers/products_controller.rb', 
+                                () => utils.moveCursorToStr('A point below the action "index"')
+                              );
 
 				expect(openedFileName).to.be.equal(fullPathForTests("/app/controllers/products_controller.rb"));
 				expect(utils.inActionBlock("index")).to.be.true;
@@ -177,7 +176,7 @@ suite('Extension Test Suite', () => {
 	});
 
 	suite('Test "navigate-rails-files.change-to-app-turbo-stream-file" command', () => {
-		let runCommandForTest:  (fileName: string, callback?: Function) => Promise<string>;
+		let runCommandForTest: (fileName: string, callback?: Function) => Promise<string>;
 
 		beforeEach(async () => {
 			runCommandForTest = runGivenCommand('navigate-rails-files.change-to-app-turbo-stream-file');
@@ -204,9 +203,9 @@ suite('Extension Test Suite', () => {
 		suite('for controllers', () => {
 			test('if there is a turbo_stream.erb file of the action', async () => {
 				const openedFileName = await runCommandForTest(
-											'/app/controllers/products_controller.rb',
-											() => utils.moveCursorToStr('A point in the action "index"')
-										);
+                                 '/app/controllers/products_controller.rb',
+                                 () => utils.moveCursorToStr('A point in the action "index"')
+                               );
 		
 				expect(openedFileName).to.be.equal(fullPathForTests("/app/views/products/index.turbo_stream.erb"));
 			});
@@ -215,9 +214,9 @@ suite('Extension Test Suite', () => {
 				const statusBarMessage = sinon.stub(window, "setStatusBarMessage");
 				
 				const openedFileName = await runCommandForTest(
-					'/app/controllers/products_controller.rb',
-					() => utils.moveCursorToStr('A point in the action "edit"')
-				);
+                                 '/app/controllers/products_controller.rb',
+                                 () => utils.moveCursorToStr('A point in the action "edit"')
+                               );
 		
 				expect(openedFileName).to.be.equal(fullPathForTests('/app/controllers/products_controller.rb'));
 				expect(statusBarMessage.called).to.be.true;
@@ -296,9 +295,9 @@ suite('Extension Test Suite', () => {
 		suite('for controllers', () => {
 			test('if there is a html.erb_spec.rb file of the action', async () => {
 				const openedFileName = await runCommandForTest(
-											'/app/controllers/products_controller.rb',
-											() => utils.moveCursorToStr('A point in the action "index"')
-										);
+                                 '/app/controllers/products_controller.rb',
+                                 () => utils.moveCursorToStr('A point in the action "index"')
+                               );
 
 				expect(openedFileName).to.be.equal(fullPathForTests("/spec/requests/products_spec.rb"));
 			});
