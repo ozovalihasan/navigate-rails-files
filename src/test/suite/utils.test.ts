@@ -522,7 +522,7 @@ suite('Utils Test Suite', () => {
       sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/controllers/mock_controller.rb');
       
       const openDocument = sinon.stub(utils, "openDocument");
-      await utils.changeToFileForControllerFiles("spec");
+      await utils.changeToFileForControllerFiles("test");
       
       expect(openDocument.calledWith('upper_folder/mock_root_folder/spec/requests/mock_spec.rb')).to.be.true;    
     });

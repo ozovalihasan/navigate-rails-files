@@ -13,22 +13,22 @@ export const changeToFileForModelFiles = async (folderName: "app" | "spec") => {
   await openDocument(projectRoot + folderName + "/models/" + modelName + (folderName === "app" ? ".rb" : "_spec.rb"));
 };
 
-export const changeToFileForControllerFiles = async (folderName: "app" | "spec") => {
+export const getControllerName = () => {
   let activeFileName = getActiveFileName();
   if (!activeFileName) {return;}
       
-  const controllerName = activeFileName.match(
+  return activeFileName.match(
     /(spec\/requests|app\/controllers)\/(?<controllerName>.*)(_spec.rb|_controller.rb)$/
   )?.groups?.controllerName;
+}
 
-  const workspaceFolder = getProjectRoot();
-
+export const changeToFileForControllerFiles = async (fileType: "app" | "test") => {
   let fullPath = "";
       
-  if (folderName === "app"){
-    fullPath = workspaceFolder + "app/controllers/" + controllerName + "_controller.rb";
+  if (fileType === "app"){
+    fullPath = getProjectRoot() + "app/controllers/" + getControllerName() + "_controller.rb";
   } else {
-    fullPath = workspaceFolder + "spec/requests/" + controllerName + "_spec.rb";
+    fullPath = getProjectRoot() + "spec/requests/" + getControllerName() + "_spec.rb";
   }
 
   await openDocument(fullPath);
@@ -36,37 +36,24 @@ export const changeToFileForControllerFiles = async (folderName: "app" | "spec")
 
 export const changeToFileForControllerFilesWithAction = async () => {
   let [controller, action] = findActionAndController();
-  if (!controller || !action){
-    window.setStatusBarMessage("A controller and an action couldn't be found.", 1000);  
-    return;
-  }
+  if (!controller || !action){ return; }
       
   const workspaceFolder = getProjectRoot();
       
   await openDocument(workspaceFolder + "app/controllers/" + controller + "_controller.rb", () => moveCursorToAction(action));
 };
 
-export const findModelName = () => {
-  let activeFileName = getActiveFileName();
-  if (!activeFileName) {return;}
-
-  const modelName = activeFileName.replace("_spec.rb", "")
-                  .replace(".rb", "")
-                  .replace(/.*\/(spec|app)\/models\//, "");
-                
-  return modelName;
-};
+export const findModelName = () => (
+  getActiveFileName()?.match(/.*\/(spec|app)\/models\/(?<modelName>.*?)(_spec\.rb|\.rb)/)?.groups?.modelName || ""
+);
 
 export const openDocument = async (filePath: string, callback: Function | null = null) => {
-  const isFileExist = checkFileExists(filePath);
-  if (!isFileExist) {
+  if (!checkFileExists(filePath)) {
     window.setStatusBarMessage(`Your file(${filePath}) doesn't exist.`, 1000);  
     return;
   }
       
-  let activeFileName = getActiveFileName();
-      
-  if (activeFileName === resolve(filePath)) {
+  if (getActiveFileName() === resolve(filePath)) {
     window.setStatusBarMessage("The requested page is already opened.", 1000);
   }
       
@@ -83,7 +70,7 @@ export const openDocument = async (filePath: string, callback: Function | null =
 export const getProjectRoot = () => {
   const activeFilePath = getActiveFileName();
 
-  return (activeFilePath?.match(/(?<projectRoot>.*\/)(app|spec)\/(models|views|controllers|requests)/)?.groups?.projectRoot);
+  return (activeFilePath?.match(/(?<projectRoot>.*\/)(app|spec)\/(models|views|controllers|requests|components)/)?.groups?.projectRoot);
 };
 
 export const setRegExp = (...arr: (string|RegExp|(string|RegExp)[])[]) => (
@@ -111,12 +98,9 @@ export const isViewRelatedFile = (fileName: string) : Boolean => (isViewFile(fil
 
 export const isViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isTurboStreamViewFile(fileName));
 
-
 export const isControllerFile = (fileName: string) => Boolean(fileName.match(/app\/controllers\/.*_controller.rb/));
 
-export const isRequestTestFile = (fileName: string) => Boolean(
-  fileName.match( /spec\/requests\/.*_spec.rb/ )
-);
+export const isControllerTestFile = (fileName: string) => Boolean(fileName.match( /spec\/requests\/.*_spec.rb/ ));
 
 export const isHTMLViewFile = (fileName: string) => Boolean(
   fileName.match( setRegExp( /(app|spec)\/views\/.*\.html\./, getTemplateEngines() ) )
@@ -185,20 +169,20 @@ export const inActionBlock = (action: string) => {
 
 export const findActionAndController = () => {
   let activeFileName = getActiveFileName();
-  if (!activeFileName) {
-    window.setStatusBarMessage('There is no an action or a controller.', 1000); 
-    return ["", ""];
-  }
+  if (!activeFileName) { return ["", ""]; }
       
-  let action = "";
-  let controller = "";
+  let [action, controller] = ["", ""];
 
-  if ( isControllerFile(activeFileName) ) {
+  if (isControllerTestFile(activeFileName)) {
+
+    controller = activeFileName.match(/spec\/requests\/(?<controller>.*)_spec.rb$/)?.groups?.controller || "";
+    
+  } else if ( isControllerFile(activeFileName) ) {
     const fileTextToCursor = getTextUntilCursor();
     
-    [ action ] = fileTextToCursor.match(/def\s*(\w+)(?!.*def\s*\w+)/s)?.slice(1) || [ "" ];
+    action = fileTextToCursor.match(/def\s*(?<action>\w+)(?!.*def\s*\w+)/s)?.groups?.action || "";
 
-    [ controller ] = activeFileName.match(/app\/controllers\/(.*)_controller.rb$/)?.slice(-1) || [ "" ];
+    controller = activeFileName.match(/app\/controllers\/(?<controller>.*)_controller.rb$/)?.groups?.controller || "";
     
   } else if ( isViewFile(activeFileName) ) {
     (
@@ -234,33 +218,35 @@ export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" |
   switch(fileExtension) {
     case ".rb":
     case ".html":
-      folderName = "app";
+      folderName = "app/";
       break;
     case "_spec.rb":
-      folderName = "spec";
+      folderName = "spec/";
       break;
   } 
       
   let activeFileName = getActiveFileName();
   if (!activeFileName) {return;}
       
-  const templateEngines = getTemplateEngines();
-
-  activeFileName = activeFileName.replace(/\/(app|spec)\//, `/${folderName}/`);
-  let componentPath = /(?<componentName>.*?)(_spec\.rb|\.html|\.rb)/.exec(activeFileName)?.groups?.componentName || "";
-
+  let componentName = activeFileName.match(/\/(app|spec)\/(?<componentName>.*?)(_spec\.rb|\.html|\.rb)/)?.groups?.componentName || "";
+  
   const useSidecar = isSidecarUsedForComponents();
-  if (useSidecar && activeFileName.match(/\.html\./) && activeFileName.match(/(\/\w+)\1/)) {
-    componentPath = componentPath.replace(/\/\w+$/, "");
+  if (useSidecar ) {
+    if (activeFileName.match(/\.html\./) && activeFileName.match(/(\/\w+)\1/)) {
+      componentName = componentName.replace(/\/\w+$/, "");
+    }
+
+    if (fileExtension === ".html") {
+      componentName = componentName.replace(/(\/\w+)$/, "$1$1");
+    }
   }
       
-  if (useSidecar && fileExtension === ".html") {
-    componentPath += componentPath.match(/\/\w+$/)?.at(0);
-  }
-      
-  let fullPath = componentPath + fileExtension;
-      
+  const projectRoot = getProjectRoot()
+  let fullPath = projectRoot + folderName + componentName + fileExtension;
+  
   if (fileExtension === ".html") {
+    const templateEngines = getTemplateEngines();
+
     for (let templateEngine of templateEngines) {
       let fullPathWithTemplateEngine = fullPath + "." + templateEngine;
       
@@ -280,16 +266,13 @@ export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" |
 
 export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileExtension: "html" | "turbo_stream") => {
   let [controller, action] = findActionAndController();
-  if (!controller){
-    window.setStatusBarMessage("Any valid view file couldn't be found.", 1000); 
-    return;
-  }
+  if (!controller){ return; }
 
   const projectRoot = getProjectRoot();
-  const templateEngines = getTemplateEngines();
-
-  let fullPath : string | null = null;
+  
+  let fullPath = "";
   let setFullPath = (templateEngine: string) => projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + "." + templateEngine + (folderName === "spec" ? "_spec.rb" : "");
+  const templateEngines = getTemplateEngines();
       
   for (let templateEngine of templateEngines) {
     fullPath = setFullPath(templateEngine);

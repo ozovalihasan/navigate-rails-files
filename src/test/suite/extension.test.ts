@@ -18,34 +18,31 @@ const openFileForTests = async(filePath: string = '/app/controllers/products_con
 
 const fullPathForTests = (filePath: string) => (path.resolve(__dirname + testFolderLocation + filePath));
 
-const runGivenCommand = (command: string) => (
-	async (fileName: string, callback?: Function) => {
-		await openFileForTests(fileName);
-		if (callback) {callback();}
-		await commands.executeCommand(command);
-		
-		let editor = utils.findEditor();
-		if (!editor) { return ""; }
-
-		return editor.document.fileName;
-	}
-);
-
 const setExpectation = (command: string) => (async (filePath: string, expectedFilePath?: string, callback?: Function) => {
-	if (!expectedFilePath) {
-		const statusBarMessage = sinon.stub(vscode.window, 'setStatusBarMessage');	
-		const openedFileName = await runGivenCommand(command)(filePath, callback);
-
-		expect(openedFileName).to.be.equal(fullPathForTests(filePath));
-		expect(statusBarMessage.called).to.be.true;
+	let statusBarMessage: any = null
+	if (expectedFilePath) {
+		statusBarMessage = sinon.spy(vscode.window, 'setStatusBarMessage');	
+	} else {
+		statusBarMessage = sinon.stub(vscode.window, 'setStatusBarMessage');	
 	}
+
+	await openFileForTests(filePath);
+	if (callback) {callback();}
+	await commands.executeCommand(command);
+	
+	let openedFileName = "";
+
+	let editor = utils.findEditor();
+	if (editor) { 
+		openedFileName = editor.document.fileName 
+	};
 
 	if (expectedFilePath) {
-		const spy = sinon.spy(vscode.window, 'setStatusBarMessage');	
-		const openedFileName = await runGivenCommand(command)(filePath, callback);
-
 		expect(openedFileName).to.be.equal(fullPathForTests(expectedFilePath));
-		expect(spy.calledOnce).to.be.false;
+		expect(statusBarMessage.called).to.be.false;
+	} else {
+		expect(openedFileName).to.be.equal(fullPathForTests(filePath));
+		expect(statusBarMessage.called).to.be.true;
 	}
 });
 
