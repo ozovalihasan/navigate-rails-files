@@ -6,11 +6,9 @@ import * as utils from '../../utils';
 import * as path from 'path';
 import { afterEach, beforeEach } from 'mocha';
 
-const testFolderLocation = "/../../../src/test/suite/example";
+const testFolderLocation = "/../../../src/test/suite/example/";
 
-const fullPathForTests = (filePath: string) => (path.resolve(__dirname + testFolderLocation + filePath));
-
-const openFileForTests = async(filePath: string = '/app/controllers/products_controller.rb') => {
+const openFileForTests = async(filePath: string = 'app/controllers/products_controller.rb') => {
 	const uri = Uri.file(
 		path.join(__dirname + testFolderLocation + filePath)
 	);
@@ -169,7 +167,7 @@ suite('Utils Test Suite', () => {
 
   suite("Test findActionAndController function", () => {
     test('for a view', async () => {
-      await openFileForTests('/app/views/products/index.html.erb');
+      await openFileForTests('app/views/products/index.html.erb');
     
       const [controller, action] = utils.findActionAndController();
       expect(controller).to.be.equal('products');
@@ -177,7 +175,7 @@ suite('Utils Test Suite', () => {
     });
 
     test('for a controller', async () => {
-      await openFileForTests('/app/controllers/products_controller.rb');
+      await openFileForTests('app/controllers/products_controller.rb');
 
       let controller : string = "";
       let action : string = "";
@@ -201,14 +199,14 @@ suite('Utils Test Suite', () => {
 
 
   test('Test findEditor function', async () => {
-    await openFileForTests('/app/controllers/products_controller.rb');
+    await openFileForTests('app/controllers/products_controller.rb');
     
     let editor = utils.findEditor();
     expect(editor).to.be.ok;
   });
 
   test('Test getTextUntilCursor function', async () => {
-    await openFileForTests('/app/controllers/products_controller.rb');
+    await openFileForTests('app/controllers/products_controller.rb');
     
     utils.moveCursorToStr('A point above the action "index"');
     expect(utils.getTextUntilCursor()).to.be.equal(
@@ -219,20 +217,20 @@ suite('Utils Test Suite', () => {
 
   suite('Test findModelName function', () => {
     test('for model file', async () => {
-      await openFileForTests('/app/models/product.rb');
+      await openFileForTests('app/models/product.rb');
 
       expect(utils.findModelName()).to.be.equal("product");
     });
 
     test('for test file', async () => {
-      await openFileForTests('/spec/models/product_spec.rb');
+      await openFileForTests('spec/models/product_spec.rb');
 
       expect(utils.findModelName()).to.be.equal("product");
     });
   });
 
   test('Test inActionBlock function', async () => {
-    await openFileForTests('/app/controllers/products_controller.rb');
+    await openFileForTests('app/controllers/products_controller.rb');
 
     utils.moveCursorToStr('A point above the action "index"');
     expect(utils.inActionBlock("index")).to.be.false;
@@ -254,7 +252,7 @@ suite('Utils Test Suite', () => {
   });
   
   test('Test moveCursorToStr function', async () => {
-    await openFileForTests('/app/controllers/products_controller.rb');
+    await openFileForTests('app/controllers/products_controller.rb');
 
     const editor = utils.findEditor();
     if (!editor) { return; }
@@ -319,20 +317,20 @@ suite('Utils Test Suite', () => {
     });
     
     test('for a document already opened', async () => {
-      const filePath = '/app/controllers/products_controller.rb';
+      const filePath = 'app/controllers/products_controller.rb';
       await openFileForTests(filePath);
 
       const statusBarMessage = sinon.stub(window, "setStatusBarMessage");
 
-      await utils.openDocument(__dirname + testFolderLocation + filePath);
+      await utils.openDocument(filePath);
       expect(statusBarMessage.calledOnce).to.be.true;
     });
     
     test('for a document', async () => {
-      const filePath = '/app/models/product.rb';
+      const filePath = 'app/models/product.rb';
       const spy = sinon.spy();
 
-      await utils.openDocument(__dirname + testFolderLocation + filePath, spy);
+      await utils.openDocument(filePath, spy);
       expect(spy.calledOnce).to.be.true;
     });
   });
@@ -344,7 +342,7 @@ suite('Utils Test Suite', () => {
 
       await utils.changeToFileForModelFiles("app");
       
-      expect(openDocument.calledWith(fullPathForTests("/app/models/product.rb"))).to.be.true;
+      expect(openDocument.calledWith("app/models/product.rb")).to.be.true;
     });
 
     test("if a model doesn't exist", async () => {
@@ -372,21 +370,21 @@ suite('Utils Test Suite', () => {
       });
 
       test('if view template will be opened', async () => {
-        checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component.html.erb").returns(true);
+        checkFileExists.withArgs("app/components/mock_component.html.erb").returns(true);
             
         await utils.changeToFileForComponents(".html");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.html.erb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component.html.erb")).to.be.true;    
       });
 
       
       test('if view template will be opened and a custom template engine is defined', async () => {
         sinon.stub(utils, "getTemplateEngines").returns(["erb", "custom_engine"]);
-        checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component.html.custom_engine").returns(true);
+        checkFileExists.withArgs("app/components/mock_component.html.custom_engine").returns(true);
             
         await utils.changeToFileForComponents(".html");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.html.custom_engine")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component.html.custom_engine")).to.be.true;    
       });
 
       test("if a view template will be opened but it doesn't exist", async () => {
@@ -400,13 +398,13 @@ suite('Utils Test Suite', () => {
       test('if the ruby file of a component will be opened', async () => {
         await utils.changeToFileForComponents(".rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
 
       test('if the rspec file of a component will be opened', async () => {
         await utils.changeToFileForComponents("_spec.rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/spec/components/mock_component_spec.rb")).to.be.true;    
+        expect(openDocument.calledWith("spec/components/mock_component_spec.rb")).to.be.true;    
       });
     });
 
@@ -418,7 +416,7 @@ suite('Utils Test Suite', () => {
       test('if the ruby file of a component will be opened', async () => {
         await utils.changeToFileForComponents(".rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_name/component.rb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_name/component.rb")).to.be.true;    
       });
 
     });
@@ -431,7 +429,7 @@ suite('Utils Test Suite', () => {
       test('if the ruby file of a component will be opened', async () => {
         await utils.changeToFileForComponents(".rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
 
     });
@@ -444,7 +442,7 @@ suite('Utils Test Suite', () => {
       test('if the ruby file of a component will be opened', async () => {
         await utils.changeToFileForComponents(".rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
 
     });
@@ -457,7 +455,7 @@ suite('Utils Test Suite', () => {
       test('if the ruby file of a component will be opened', async () => {
         await utils.changeToFileForComponents(".rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
 
     });
@@ -470,48 +468,48 @@ suite('Utils Test Suite', () => {
 
       test('if a view template(html.erb) will be opened', async () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb');
-        checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb").returns(true);
+        checkFileExists.withArgs("app/components/mock_component/mock_component.html.erb").returns(true);
         
         await utils.changeToFileForComponents(".html");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component/mock_component.html.erb")).to.be.true;    
       });
 
       test('if a view template(html.slim) will be opened', async () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb');
-        checkFileExists.withArgs("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim").returns(true);
+        checkFileExists.withArgs("app/components/mock_component/mock_component.html.slim").returns(true);
         
         await utils.changeToFileForComponents(".html");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component/mock_component.html.slim")).to.be.true;    
       });
 
       test('if a ruby file of a component will be opened and a view template(html.erb) is the current file', async () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb');
         await utils.changeToFileForComponents(".rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
 
       test('if a ruby file of a component will be opened and a view template(html.slim) is the current file', async () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim');
         await utils.changeToFileForComponents(".rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/app/components/mock_component.rb")).to.be.true;    
+        expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
       
       test('if a rspec file of a component will be opened and a view template(html.erb) is the current file', async () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb');
         await utils.changeToFileForComponents("_spec.rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/spec/components/mock_component_spec.rb")).to.be.true;    
+        expect(openDocument.calledWith("spec/components/mock_component_spec.rb")).to.be.true;    
       });
 
       test('if a rspec file of a component will be opened and a view template(html.slim) is the current file', async () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim');
         await utils.changeToFileForComponents("_spec.rb");
         
-        expect(openDocument.calledWith("upper_folder/mock_root_folder/spec/components/mock_component_spec.rb")).to.be.true;    
+        expect(openDocument.calledWith("spec/components/mock_component_spec.rb")).to.be.true;    
       });
 
     });
@@ -524,7 +522,7 @@ suite('Utils Test Suite', () => {
       const openDocument = sinon.stub(utils, "openDocument");
       await utils.changeToFileForControllerFiles("test");
       
-      expect(openDocument.calledWith('upper_folder/mock_root_folder/spec/requests/mock_spec.rb')).to.be.true;    
+      expect(openDocument.calledWith('spec/requests/mock_spec.rb')).to.be.true;    
     });
 
     test("if the current file is a request test file ", async () => {
@@ -533,7 +531,7 @@ suite('Utils Test Suite', () => {
       const openDocument = sinon.stub(utils, "openDocument");
       await utils.changeToFileForControllerFiles("app");
       
-      expect(openDocument.calledWith('upper_folder/mock_root_folder/app/controllers/mock_controller.rb')).to.be.true;    
+      expect(openDocument.calledWith('app/controllers/mock_controller.rb')).to.be.true;    
     });
   });
 
@@ -542,8 +540,9 @@ suite('Utils Test Suite', () => {
     
     const openDocument = sinon.stub(utils, "openDocument");
     await utils.changeToFileForControllerFilesWithAction();
+    console.warn();
     
-    expect(openDocument.calledWith(fullPathForTests("/app/controllers/products_controller.rb"))).to.be.true;    
+    expect(openDocument.calledWith("app/controllers/products_controller.rb")).to.be.true;    
   });
 
   test("Test getTemplateEngines function", async () => {
@@ -558,8 +557,8 @@ suite('Utils Test Suite', () => {
   });
 
   test("Test checkFileExists function", () => {
-    expect(utils.checkFileExists(fullPathForTests("/app/controllers/products_controller.rb"))).to.be.true;
-    expect(utils.checkFileExists(fullPathForTests("/not_exist_file.rb"))).to.be.false;
+    expect(utils.checkFileExists("app/controllers/products_controller.rb")).to.be.true;
+    expect(utils.checkFileExists("not_exist_file.rb")).to.be.false;
   });
 
   suite("Test isSidecarUsedForComponents function", () => {
@@ -594,28 +593,28 @@ suite('Utils Test Suite', () => {
       suite("if the file extension is 'html'", () => {
 
         test("if action.html.erb file exists", async () => {
-          checkFileExists.withArgs("mock_root_folder/app/views/products/index.html.erb").returns(true);
+          checkFileExists.withArgs("app/views/products/index.html.erb").returns(true);
           
           await utils.changeToFileForViewFiles("app", "html");
           
-          expect(openDocument.calledWith("mock_root_folder/app/views/products/index.html.erb")).to.be.true;    
+          expect(openDocument.calledWith("app/views/products/index.html.erb")).to.be.true;    
         }); 
 
         test("if action.html.erb file doesn't exist", async () => {
-          checkFileExists.withArgs("mock_root_folder/app/views/products/index.turbo_stream.erb").returns(true);
+          checkFileExists.withArgs("app/views/products/index.turbo_stream.erb").returns(true);
           
           await utils.changeToFileForViewFiles("app", "html");
           
-          expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.erb")).to.be.true;    
+          expect(openDocument.calledWith("app/views/products/index.turbo_stream.erb")).to.be.true;    
         }); 
       }); 
 
       test("if file extension is 'turbo_stream'", async () => {
-        checkFileExists.withArgs("mock_root_folder/app/views/products/index.turbo_stream.erb").returns(true);
+        checkFileExists.withArgs("app/views/products/index.turbo_stream.erb").returns(true);
   
         await utils.changeToFileForViewFiles("app", "turbo_stream");
         
-        expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.erb")).to.be.true;    
+        expect(openDocument.calledWith("app/views/products/index.turbo_stream.erb")).to.be.true;    
       });
     });
     
@@ -628,28 +627,28 @@ suite('Utils Test Suite', () => {
       suite("if the file extension is 'html'", () => {
 
         test("if action.html.custom_engine file exists", async () => {
-          checkFileExists.withArgs("mock_root_folder/app/views/products/index.html.custom_engine").returns(true);
+          checkFileExists.withArgs("app/views/products/index.html.custom_engine").returns(true);
           
           await utils.changeToFileForViewFiles("app", "html");
           
-          expect(openDocument.calledWith("mock_root_folder/app/views/products/index.html.custom_engine")).to.be.true;    
+          expect(openDocument.calledWith("app/views/products/index.html.custom_engine")).to.be.true;    
         }); 
 
         test("if action.html.custom_engine file doesn't exist", async () => {
-          checkFileExists.withArgs("mock_root_folder/app/views/products/index.turbo_stream.custom_engine").returns(true);
+          checkFileExists.withArgs("app/views/products/index.turbo_stream.custom_engine").returns(true);
           
           await utils.changeToFileForViewFiles("app", "html");
           
-          expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.custom_engine")).to.be.true;    
+          expect(openDocument.calledWith("app/views/products/index.turbo_stream.custom_engine")).to.be.true;    
         }); 
       }); 
 
       test("if file extension is 'turbo_stream'", async () => {
-        checkFileExists.withArgs("mock_root_folder/app/views/products/index.turbo_stream.custom_engine").returns(true);
+        checkFileExists.withArgs("app/views/products/index.turbo_stream.custom_engine").returns(true);
   
         await utils.changeToFileForViewFiles("app", "turbo_stream");
         
-        expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.custom_engine")).to.be.true;    
+        expect(openDocument.calledWith("app/views/products/index.turbo_stream.custom_engine")).to.be.true;    
       });
     });
 
@@ -657,28 +656,28 @@ suite('Utils Test Suite', () => {
       suite("if the file extension is 'html'", () => {
 
         test("if action.html.slim file exists", async () => {
-          checkFileExists.withArgs("mock_root_folder/app/views/products/index.html.slim").returns(true);
+          checkFileExists.withArgs("app/views/products/index.html.slim").returns(true);
           
           await utils.changeToFileForViewFiles("app", "html");
           
-          expect(openDocument.calledWith("mock_root_folder/app/views/products/index.html.slim")).to.be.true;    
+          expect(openDocument.calledWith("app/views/products/index.html.slim")).to.be.true;    
         }); 
 
         test("if action.html.slim file doesn't exist", async () => {
-          checkFileExists.withArgs("mock_root_folder/app/views/products/index.turbo_stream.slim").returns(true);
+          checkFileExists.withArgs("app/views/products/index.turbo_stream.slim").returns(true);
           
           await utils.changeToFileForViewFiles("app", "html");
           
-          expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.slim")).to.be.true;    
+          expect(openDocument.calledWith("app/views/products/index.turbo_stream.slim")).to.be.true;    
         }); 
       }); 
 
       test("if file extension is 'turbo_stream'", async () => {
-        checkFileExists.withArgs("mock_root_folder/app/views/products/index.turbo_stream.slim").returns(true);
+        checkFileExists.withArgs("app/views/products/index.turbo_stream.slim").returns(true);
   
         await utils.changeToFileForViewFiles("app", "turbo_stream");
         
-        expect(openDocument.calledWith("mock_root_folder/app/views/products/index.turbo_stream.slim")).to.be.true;    
+        expect(openDocument.calledWith("app/views/products/index.turbo_stream.slim")).to.be.true;    
       });
     });
     

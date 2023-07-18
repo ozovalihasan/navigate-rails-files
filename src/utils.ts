@@ -8,9 +8,8 @@ export const changeToFileForModelFiles = async (folderName: "app" | "spec") => {
     window.setStatusBarMessage("There is no a model name", 1000);
     return; 
   }
-  const projectRoot = getProjectRoot();
-      
-  await openDocument(projectRoot + folderName + "/models/" + modelName + (folderName === "app" ? ".rb" : "_spec.rb"));
+
+  await openDocument(folderName + "/models/" + modelName + (folderName === "app" ? ".rb" : "_spec.rb"));
 };
 
 export const getControllerName = () => {
@@ -26,9 +25,9 @@ export const changeToFileForControllerFiles = async (fileType: "app" | "test") =
   let fullPath = "";
       
   if (fileType === "app"){
-    fullPath = getProjectRoot() + "app/controllers/" + getControllerName() + "_controller.rb";
+    fullPath = "app/controllers/" + getControllerName() + "_controller.rb";
   } else {
-    fullPath = getProjectRoot() + "spec/requests/" + getControllerName() + "_spec.rb";
+    fullPath = "spec/requests/" + getControllerName() + "_spec.rb";
   }
 
   await openDocument(fullPath);
@@ -38,9 +37,7 @@ export const changeToFileForControllerFilesWithAction = async () => {
   let [controller, action] = findActionAndController();
   if (!controller || !action){ return; }
       
-  const workspaceFolder = getProjectRoot();
-      
-  await openDocument(workspaceFolder + "app/controllers/" + controller + "_controller.rb", () => moveCursorToAction(action));
+  await openDocument("app/controllers/" + controller + "_controller.rb", () => moveCursorToAction(action));
 };
 
 export const findModelName = () => (
@@ -48,17 +45,19 @@ export const findModelName = () => (
 );
 
 export const openDocument = async (filePath: string, callback: Function | null = null) => {
+  const fullPath = getProjectRoot() + filePath;
+  
   if (!checkFileExists(filePath)) {
-    window.setStatusBarMessage(`Your file(${filePath}) doesn't exist.`, 1000);  
+    window.setStatusBarMessage(`Your file(${fullPath}) doesn't exist.`, 1000);  
     return;
   }
       
-  if (getActiveFileName() === resolve(filePath)) {
+  if (getActiveFileName() === resolve(fullPath)) {
     window.setStatusBarMessage("The requested page is already opened.", 1000);
   }
       
   try {
-    const document = await workspace.openTextDocument(filePath);
+    const document = await workspace.openTextDocument(fullPath);
     await window.showTextDocument(document);
     
     if (callback) { callback(); }
@@ -241,8 +240,7 @@ export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" |
     }
   }
       
-  const projectRoot = getProjectRoot()
-  let fullPath = projectRoot + folderName + componentName + fileExtension;
+  let fullPath = folderName + componentName + fileExtension;
   
   if (fileExtension === ".html") {
     const templateEngines = getTemplateEngines();
@@ -268,10 +266,8 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
   let [controller, action] = findActionAndController();
   if (!controller){ return; }
 
-  const projectRoot = getProjectRoot();
-  
   let fullPath = "";
-  let setFullPath = (templateEngine: string) => projectRoot + folderName + "/views/" + controller + "/" + action + "." + fileExtension + "." + templateEngine + (folderName === "spec" ? "_spec.rb" : "");
+  let setFullPath = (templateEngine: string) => folderName + "/views/" + controller + "/" + action + "." + fileExtension + "." + templateEngine + (folderName === "spec" ? "_spec.rb" : "");
   const templateEngines = getTemplateEngines();
       
   for (let templateEngine of templateEngines) {
@@ -296,5 +292,5 @@ export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileE
 };
 
 export const checkFileExists = (filePath: string): boolean => {
-  return fs.existsSync(filePath);
+  return fs.existsSync(getProjectRoot() + filePath);
 };
