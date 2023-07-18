@@ -6,36 +6,25 @@ export const changeToFileForModelFiles = async (folderName: "app" | "spec") => {
   const modelName = findModelName();
   if (!modelName) { 
     window.setStatusBarMessage("There is no a model name", 1000);
-    return; 
+  } else {
+    await openDocument(folderName + "/models/" + modelName + (folderName === "app" ? ".rb" : "_spec.rb"));
   }
-
-  await openDocument(folderName + "/models/" + modelName + (folderName === "app" ? ".rb" : "_spec.rb"));
 };
 
 export const getControllerName = () => {
-  let activeFileName = getActiveFileName();
-  if (!activeFileName) {return;}
-      
-  return activeFileName.match(
-    /(spec\/requests|app\/controllers)\/(?<controllerName>.*)(_spec.rb|_controller.rb)$/
-  )?.groups?.controllerName;
-}
+  return findActionAndController().controller;
+};
 
 export const changeToFileForControllerFiles = async (fileType: "app" | "test") => {
-  let fullPath = "";
-      
   if (fileType === "app"){
-    fullPath = "app/controllers/" + getControllerName() + "_controller.rb";
+    await openDocument("app/controllers/" + getControllerName() + "_controller.rb");
   } else {
-    fullPath = "spec/requests/" + getControllerName() + "_spec.rb";
-  }
-
-  await openDocument(fullPath);
+    await openDocument("spec/requests/" + getControllerName() + "_spec.rb");
+  };
 };
 
 export const changeToFileForControllerFilesWithAction = async () => {
-  let [controller, action] = findActionAndController();
-  if (!controller || !action){ return; }
+  const {controller, action} = findActionAndController();
       
   await openDocument("app/controllers/" + controller + "_controller.rb", () => moveCursorToAction(action));
 };
@@ -66,11 +55,9 @@ export const openDocument = async (filePath: string, callback: Function | null =
   }
 };
 
-export const getProjectRoot = () => {
-  const activeFilePath = getActiveFileName();
-
-  return (activeFilePath?.match(/(?<projectRoot>.*\/)(app|spec)\/(models|views|controllers|requests|components)/)?.groups?.projectRoot);
-};
+export const getProjectRoot = () => (
+  getActiveFileName()?.match(/(?<projectRoot>.*\/)(app|spec)\/(models|views|controllers|requests|components)/)?.groups?.projectRoot
+);
 
 export const setRegExp = (...arr: (string|RegExp|(string|RegExp)[])[]) => (
   new RegExp(
@@ -101,15 +88,9 @@ export const isControllerFile = (fileName: string) => Boolean(fileName.match(/ap
 
 export const isControllerTestFile = (fileName: string) => Boolean(fileName.match( /spec\/requests\/.*_spec.rb/ ));
 
-export const isHTMLViewFile = (fileName: string) => Boolean(
-  fileName.match( setRegExp( /(app|spec)\/views\/.*\.html\./, getTemplateEngines() ) )
-);
+export const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.html\./));
 
-export const isTurboStreamViewFile = (fileName: string) => Boolean(
-  fileName.match(
-    setRegExp( /(app|spec)\/views\/.*\.turbo_stream\./, getTemplateEngines() )
-  )
-);
+export const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.turbo_stream\./));
 
 export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/models/));
 
@@ -119,12 +100,13 @@ export const isComponentFile = (fileName: string) => Boolean(fileName.match(/(ap
 
 export const moveCursorToStr = (str: string) => {
   const editor = findEditor();
-  if (!editor) { return; }
 
-  const document = editor.document;
-  const wordPosition = document.positionAt(document.getText().indexOf(str));
-  const newPosition = new Position(wordPosition.line, wordPosition.character + str.length);
-  editor.selection = new Selection(newPosition, newPosition);
+  if (editor) { 
+    const document = editor.document;
+    const wordPosition = document.positionAt(document.getText().indexOf(str));
+    const newPosition = new Position(wordPosition.line, wordPosition.character + str.length);
+    editor.selection = new Selection(newPosition, newPosition);
+   }
 };
 
 export const findEditor = (): TextEditor | undefined => {
@@ -138,9 +120,9 @@ export const findEditor = (): TextEditor | undefined => {
 };
 
 export const moveCursorToAction = (action: string) => {
-  if (inActionBlock(action)) { return; }
-
-  moveCursorToStr(`def ${action}`);
+  if (! inActionBlock(action)) { 
+    moveCursorToStr(`def ${action}`); 
+  }
 };
 
 export const getTextUntilCursor = () => {
@@ -167,16 +149,17 @@ export const inActionBlock = (action: string) => {
 };
 
 export const findActionAndController = () => {
-  let activeFileName = getActiveFileName();
-  if (!activeFileName) { return ["", ""]; }
-      
   let [action, controller] = ["", ""];
+
+  let activeFileName = getActiveFileName();
+  if (!activeFileName) { return {action, controller}; }
 
   if (isControllerTestFile(activeFileName)) {
 
     controller = activeFileName.match(/spec\/requests\/(?<controller>.*)_spec.rb$/)?.groups?.controller || "";
     
   } else if ( isControllerFile(activeFileName) ) {
+    
     const fileTextToCursor = getTextUntilCursor();
     
     action = fileTextToCursor.match(/def\s*(?<action>\w+)(?!.*def\s*\w+)/s)?.groups?.action || "";
@@ -184,30 +167,24 @@ export const findActionAndController = () => {
     controller = activeFileName.match(/app\/controllers\/(?<controller>.*)_controller.rb$/)?.groups?.controller || "";
     
   } else if ( isViewFile(activeFileName) ) {
+
     (
       {controller, action} = activeFileName.match(
-        setRegExp(
-          /(app|spec)\/views\/(?<controller>.*)\/(?<action>\w+)\.(turbo_stream|html)\./, 
-          getTemplateEngines(),
-          /(_spec\.rb)*/ 
-        )
+        setRegExp( /(app|spec)\/views\/(?<controller>.*)\/(?<action>\w+)\.(turbo_stream|html)\./ ) 
       )?.groups || {controller: "", action: ""}
     );
+    
   } else {
     window.setStatusBarMessage('There is no an action or a controller.', 1000); 
-    return ["", ""];
   }
       
-  return [controller, action];
+  return {action, controller};
 };
 
 export const getTemplateEngines = () => workspace.getConfiguration('navigate-rails-files').get("template-engines") as string[];
 
 export const getActiveFileName = () => {
-  const editor = findEditor();
-  if (!editor) { return; }
-      
-  return editor.document.fileName;
+  return findEditor()?.document.fileName;
 };
 
 export const isSidecarUsedForComponents = () => workspace.getConfiguration('navigate-rails-files').get("use-view-components-sidecar") as boolean;
@@ -229,8 +206,7 @@ export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" |
       
   let componentName = activeFileName.match(/\/(app|spec)\/(?<componentName>.*?)(_spec\.rb|\.html|\.rb)/)?.groups?.componentName || "";
   
-  const useSidecar = isSidecarUsedForComponents();
-  if (useSidecar ) {
+  if (isSidecarUsedForComponents()) {
     if (activeFileName.match(/\.html\./) && activeFileName.match(/(\/\w+)\1/)) {
       componentName = componentName.replace(/\/\w+$/, "");
     }
@@ -256,29 +232,28 @@ export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" |
     };
 
     window.setStatusBarMessage("Any valid view file couldn't be found.", 1000);
+
   } else if (fileExtension === ".rb" || (fileExtension === "_spec.rb")){
+    
     await openDocument(fullPath);
+
   };
 };
 
 
 export const changeToFileForViewFiles = async (folderName: "app" | "spec", fileExtension: "html" | "turbo_stream") => {
-  let [controller, action] = findActionAndController();
+  const {controller, action} = findActionAndController();
   if (!controller){ return; }
 
   let fullPath = "";
-  let setFullPath = (templateEngine: string) => folderName + "/views/" + controller + "/" + action + "." + fileExtension + "." + templateEngine + (folderName === "spec" ? "_spec.rb" : "");
   const templateEngines = getTemplateEngines();
+  const setFullPath = (templateEngine: string) => folderName + "/views/" + controller + "/" + action + "." + fileExtension + "." + templateEngine + (folderName === "spec" ? "_spec.rb" : "");
       
   for (let templateEngine of templateEngines) {
     fullPath = setFullPath(templateEngine);
     
-    if (fileExtension === "html") {
-    
-      const isFileExist = checkFileExists(fullPath);
-      if (!isFileExist) {
-        fullPath = fullPath.replace("html", "turbo_stream");
-      };
+    if ( (fileExtension === "html") && (!checkFileExists(fullPath)) ) {
+      fullPath = fullPath.replace("html", "turbo_stream");
     };
     
     if ( checkFileExists(fullPath) ) {

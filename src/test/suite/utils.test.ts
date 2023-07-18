@@ -169,7 +169,7 @@ suite('Utils Test Suite', () => {
     test('for a view', async () => {
       await openFileForTests('app/views/products/index.html.erb');
     
-      const [controller, action] = utils.findActionAndController();
+      const {controller, action} = utils.findActionAndController();
       expect(controller).to.be.equal('products');
       expect(action).to.be.equal('index');
     });
@@ -181,17 +181,17 @@ suite('Utils Test Suite', () => {
       let action : string = "";
       
       utils.moveCursorToStr('A point above the action "index"');
-      [controller, action] = utils.findActionAndController();
+      ({controller, action} = utils.findActionAndController());
       expect(controller).to.be.equal('products');
       expect(action).to.be.equal('');
 
       utils.moveCursorToStr('A point in the action "index"');
-      [controller, action] = utils.findActionAndController();
+      ({controller, action} = utils.findActionAndController());
       expect(controller).to.be.equal('products');
       expect(action).to.be.equal('index');
 
       utils.moveCursorToStr('A point below the action "index"');
-      [controller, action] = utils.findActionAndController();
+      ({controller, action} = utils.findActionAndController());
       expect(controller).to.be.equal('products');
       expect(action).to.be.equal('index');
     });
@@ -249,6 +249,12 @@ suite('Utils Test Suite', () => {
     expect(utils.setRegExp("mock_string", /mock_regexp_with_special_characters_like(\/\s\w+.*)/, ["mock", "array"], [/mock/, /\.regexp/, /\.array/]).source).to.be.equal(
       /mock_stringmock_regexp_with_special_characters_like(\/\s\w+.*)(mock|array)(mock|\.regexp|\.array)/.source
     );
+  });
+
+  test('Test getControllerName function', async () => {
+    sinon.stub(utils, "findActionAndController").returns({controller: "mock_controller", action: "mock_action"});
+    
+    expect(utils.getControllerName()).to.be.equal("mock_controller");
   });
   
   test('Test moveCursorToStr function', async () => {
@@ -536,7 +542,7 @@ suite('Utils Test Suite', () => {
   });
 
   test("Test changeToFileForControllerFilesWithAction function", async () => {
-    sinon.stub(utils, "findActionAndController").returns(["products", "index"]);
+    sinon.stub(utils, "findActionAndController").returns({controller: "products", action: "index"});
     
     const openDocument = sinon.stub(utils, "openDocument");
     await utils.changeToFileForControllerFilesWithAction();
@@ -584,7 +590,7 @@ suite('Utils Test Suite', () => {
     
     beforeEach(() => {
       checkFileExists = sinon.stub(utils, "checkFileExists").returns(false);
-      sinon.stub(utils, "findActionAndController").returns(["products", "index"]);
+      sinon.stub(utils, "findActionAndController").returns({controller: "products", action: "index"});
       openDocument = sinon.stub(utils, "openDocument");
       sinon.stub(utils, "getProjectRoot").returns("mock_root_folder/");
     });
