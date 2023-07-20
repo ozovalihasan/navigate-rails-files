@@ -257,6 +257,36 @@ suite('Utils Test Suite', () => {
     expect(utils.getControllerName()).to.be.equal("mock_controller");
   });
   
+
+  suite('Test openTestFile function', () => {
+    let checkFileExists = null as any;
+    let openDocument = null as any;
+    
+    beforeEach(() => {
+      openDocument = sinon.stub(utils, "openDocument");
+      checkFileExists = sinon.stub(utils, "checkFileExists").returns(false);
+    });
+
+    test('if rspec file exists ', async () => {
+      checkFileExists.withArgs("spec/models/mock_model_spec.rb").returns(true);
+      
+      expect(await utils.openTestFile("models/mock_model")).to.be.true;
+      expect(openDocument.calledWith("spec/models/mock_model_spec.rb")).to.be.true;
+    });
+
+    test("if rspec file doesn't exist", async () => {
+      checkFileExists.withArgs("test/models/mock_model_test.rb").returns(true);
+
+      expect(await utils.openTestFile("models/mock_model")).to.be.true;
+      expect(openDocument.calledWith("test/models/mock_model_test.rb")).to.be.true;
+    });
+
+    test("if any test file doesn't exist", async () => {
+      expect(await utils.openTestFile("models/mock_model")).to.be.false;
+    });
+    
+  });
+  
   test('Test moveCursorToStr function', async () => {
     await openFileForTests('app/controllers/products_controller.rb');
 
@@ -408,9 +438,19 @@ suite('Utils Test Suite', () => {
       });
 
       test('if the rspec file of a component will be opened', async () => {
+        checkFileExists.withArgs("spec/components/mock_component_spec.rb").returns(true);
+
         await utils.changeToFileForComponents("_spec.rb");
         
         expect(openDocument.calledWith("spec/components/mock_component_spec.rb")).to.be.true;    
+      });
+
+      test('if the minitest file of a component will be opened', async () => {
+        checkFileExists.withArgs("test/components/mock_component_test.rb").returns(true);
+
+        await utils.changeToFileForComponents("_spec.rb");
+        
+        expect(openDocument.calledWith("test/components/mock_component_test.rb")).to.be.true;    
       });
     });
 
@@ -505,6 +545,7 @@ suite('Utils Test Suite', () => {
       });
       
       test('if a rspec file of a component will be opened and a view template(html.erb) is the current file', async () => {
+        checkFileExists.withArgs("spec/components/mock_component_spec.rb").returns(true);
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb');
         await utils.changeToFileForComponents("_spec.rb");
         
@@ -512,6 +553,7 @@ suite('Utils Test Suite', () => {
       });
 
       test('if a rspec file of a component will be opened and a view template(html.slim) is the current file', async () => {
+        checkFileExists.withArgs("spec/components/mock_component_spec.rb").returns(true);
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim');
         await utils.changeToFileForComponents("_spec.rb");
         
@@ -524,6 +566,7 @@ suite('Utils Test Suite', () => {
   suite("Test changeToFileForControllerFiles function", () => {
     test("if the current file is a controller file ", async () => {
       sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/controllers/mock_controller.rb');
+      sinon.stub(utils, "checkFileExists").withArgs('spec/requests/mock_spec.rb').returns(true);
       
       const openDocument = sinon.stub(utils, "openDocument");
       await utils.changeToFileForControllerFiles("test");
@@ -592,7 +635,6 @@ suite('Utils Test Suite', () => {
       checkFileExists = sinon.stub(utils, "checkFileExists").returns(false);
       sinon.stub(utils, "findActionAndController").returns({controller: "products", action: "index"});
       openDocument = sinon.stub(utils, "openDocument");
-      sinon.stub(utils, "getProjectRoot").returns("mock_root_folder/");
     });
 
     suite("if a custom template engine is not defined", () => {

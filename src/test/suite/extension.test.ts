@@ -19,12 +19,13 @@ const openFileForTests = async(filePath: string = '/app/controllers/products_con
 const fullPathForTests = (filePath: string) => (path.resolve(__dirname + testFolderLocation + filePath));
 
 const setExpectation = (command: string) => (async (filePath: string, expectedFilePath?: string, callback?: Function) => {
-	let statusBarMessage: any = null
+	let statusBarMessage: any = null;
 	if (expectedFilePath) {
 		statusBarMessage = sinon.spy(vscode.window, 'setStatusBarMessage');	
 	} else {
 		statusBarMessage = sinon.stub(vscode.window, 'setStatusBarMessage');	
 	}
+	
 
 	await openFileForTests(filePath);
 	if (callback) {callback();}
@@ -34,7 +35,7 @@ const setExpectation = (command: string) => (async (filePath: string, expectedFi
 
 	let editor = utils.findEditor();
 	if (editor) { 
-		openedFileName = editor.document.fileName 
+		openedFileName = editor.document.fileName; 
 	};
 
 	if (expectedFilePath) {
