@@ -18,8 +18,7 @@ export const navigateToModelFile = async (folderName: "app" | "test") => {
 
 export const openTestFile = async (halfPath: string) => {
   let folderNameAndExtensions = [
-    {folderName: "spec/", fileExtension: "_spec.rb"},
-    {folderName: "test/", fileExtension: "_test.rb"}
+    {folderName: "spec/", fileExtension: "_spec.rb"}
   ];
 
   for (let {folderName, fileExtension} of folderNameAndExtensions) {
@@ -49,13 +48,6 @@ export const navigateToControllerFile = async (fileType: "app" | "test") => {
       return;
     } 
 
-    filePath = "test/controllers/" + getControllerName() + "_controller_test.rb";
-
-    if (checkFileExists(filePath)) {
-      await openDocument(filePath);
-      return;
-    }
-
     window.setStatusBarMessage("A test file for the controller couldn't be found", 1000);
   };
 };
@@ -66,7 +58,7 @@ export const navigateToControllerFileWithAction = async () => {
 };
 
 export const findModelName = () => (
-  getActiveFileName()?.match(/.*\/(app|spec|test)\/models\/(?<modelName>.*?)(_spec\.rb|_test\.rb|\.rb)/)?.groups?.modelName || ""
+  getActiveFileName()?.match(/.*\/(app|spec)\/models\/(?<modelName>.*?)(_spec\.rb|\.rb)/)?.groups?.modelName || ""
 );
 
 export const openDocument = async (filePath: string, callback: Function | null = null) => {
@@ -92,7 +84,7 @@ export const openDocument = async (filePath: string, callback: Function | null =
 };
 
 export const getProjectRoot = () => (
-  getActiveFileName()?.match(/(?<projectRoot>.*\/)(app|spec|test)\/(models|views|controllers|requests|components)/)?.groups?.projectRoot
+  getActiveFileName()?.match(/(?<projectRoot>.*\/)(app|spec)\/(models|views|controllers|requests|components)/)?.groups?.projectRoot
 );
 
 export const setRegExp = (...arr: (string|RegExp|(string|RegExp)[])[]) => (
@@ -122,17 +114,17 @@ export const isViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isT
 
 export const isControllerFile = (fileName: string) => Boolean(fileName.match(/app\/controllers\/.*_controller.rb/));
 
-export const isControllerTestFile = (fileName: string) => Boolean(fileName.match( /(spec\/requests\/.*_spec.rb|test\/controllers\/.*_controller_test.rb)/ ));
+export const isControllerTestFile = (fileName: string) => Boolean(fileName.match( /(spec\/requests\/.*_spec.rb)/ ));
 
-export const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec|test)\/views\/.*\.html\./));
+export const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.html\./));
 
-export const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec|test)\/views\/.*\.turbo_stream\./));
+export const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.turbo_stream\./));
 
-export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec|test)\/models/));
+export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/models/));
 
-export const isTestFile = (fileName: string) => Boolean(fileName.match(/(spec|test)\/.*(_spec.rb|_test.rb)/));
+export const isTestFile = (fileName: string) => Boolean(fileName.match(/(spec)\/.*(_spec.rb)/));
 
-export const isComponentFile = (fileName: string) => Boolean(fileName.match(/(app|spec|test)\/components/));
+export const isComponentFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/components/));
 
 export const moveCursorToStr = (str: string) => {
   const editor = findEditor();
@@ -194,7 +186,6 @@ export const findActionAndController = () => {
 
     controller = (
       activeFileName.match(/spec\/requests\/(?<controller>.*)_spec.rb$/)?.groups?.controller || 
-      activeFileName.match(/test\/controllers\/(?<controller>.*)_controller_test.rb$/)?.groups?.controller || 
       ""
     );
     
@@ -211,7 +202,7 @@ export const findActionAndController = () => {
 
     (
       {controller, action} = activeFileName.match(
-        /(app|spec|test)\/views\/(?<controller>.*)\/(?<action>\w+)\.(turbo_stream|html)\./ 
+        /(app|spec)\/views\/(?<controller>.*)\/(?<action>\w+)\.(turbo_stream|html)\./ 
       )?.groups || {controller: "", action: ""}
     );
     
@@ -230,23 +221,23 @@ export const getActiveFileName = () => {
 
 export const isSidecarUsedForComponents = () => workspace.getConfiguration('navigateRailsFiles').get("useViewComponentsSidecar") as boolean;
 
-export const navigateToComponentFile = async (fileExtension: "ruby" | "view" | "test") => {
+export const navigateToComponentFile = async (fileType: "ruby" | "view" | "test") => {
   let activeFileName = getActiveFileName();
   if (!activeFileName) {return;}
       
-  let componentName = activeFileName.match(/\/(app|spec|test)\/(?<componentName>.*?)(_test\.rb|_spec\.rb|\.html|\.rb)/)?.groups?.componentName || "";
+  let componentName = activeFileName.match(/\/(app|spec)\/(?<componentName>.*?)(_spec\.rb|\.html|\.rb)/)?.groups?.componentName || "";
   
   if (isSidecarUsedForComponents()) {
     if (activeFileName.match(/\.html\./) && activeFileName.match(/(\/\w+)\1/)) {
       componentName = componentName.replace(/\/\w+$/, "");
     }
 
-    if (fileExtension === "view") {
+    if (fileType === "view") {
       componentName = componentName.replace(/(\/\w+)$/, "$1$1");
     }
   }
       
-  if (fileExtension === "view") {
+  if (fileType === "view") {
     const templateEngines = getTemplateEngines();
 
     for (let templateEngine of templateEngines) {
@@ -260,13 +251,13 @@ export const navigateToComponentFile = async (fileExtension: "ruby" | "view" | "
 
     window.setStatusBarMessage("Any valid view file couldn't be found.", 1000);
 
-  } else if (fileExtension === "test"){
+  } else if (fileType === "test"){
 
     if (!(await openTestFile(componentName))) {
       window.setStatusBarMessage("A test file for the component couldn't be found.", 1000);
     }
 
-  } else if (fileExtension === "ruby"){
+  } else if (fileType === "ruby"){
     await openDocument("app/" + componentName + ".rb");
   };
 };

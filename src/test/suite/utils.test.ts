@@ -274,13 +274,6 @@ suite('Utils Test Suite', () => {
       expect(openDocument.calledWith("spec/models/mock_model_spec.rb")).to.be.true;
     });
 
-    test("if rspec file doesn't exist", async () => {
-      checkFileExists.withArgs("test/models/mock_model_test.rb").returns(true);
-
-      expect(await utils.openTestFile("models/mock_model")).to.be.true;
-      expect(openDocument.calledWith("test/models/mock_model_test.rb")).to.be.true;
-    });
-
     test("if any test file doesn't exist", async () => {
       expect(await utils.openTestFile("models/mock_model")).to.be.false;
     });
@@ -443,14 +436,6 @@ suite('Utils Test Suite', () => {
         await utils.navigateToComponentFile("test");
         
         expect(openDocument.calledWith("spec/components/mock_component_spec.rb")).to.be.true;    
-      });
-
-      test('if the minitest file of a component will be opened', async () => {
-        checkFileExists.withArgs("test/components/mock_component_test.rb").returns(true);
-
-        await utils.navigateToComponentFile("test");
-        
-        expect(openDocument.calledWith("test/components/mock_component_test.rb")).to.be.true;    
       });
     });
 
