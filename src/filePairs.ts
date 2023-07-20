@@ -1,4 +1,4 @@
-import { changeToFileForComponents, changeToFileForControllerFiles, changeToFileForControllerFilesWithAction, changeToFileForModelFiles, changeToFileForViewFiles, getActiveFileName, isComponentFile, isControllerFile, isModelFile, isControllerTestFile, isTurboStreamViewFile, isViewRelatedFile } from "./utils";
+import { navigateToComponentFile, navigateToControllerFile, navigateToControllerFileWithAction, navigateToModelFile, navigateToViewFile, getActiveFileName, isComponentFile, isControllerFile, isModelFile, isControllerTestFile, isTurboStreamViewFile, isViewRelatedFile } from "./utils";
 
 export type PairType = {
   checkFunction: (fileName: string) => Boolean;
@@ -11,25 +11,25 @@ export const rbPairs: PairsType = [
   {
     checkFunction: isControllerTestFile, 
     callback : async () => {
-      await changeToFileForControllerFiles("app");
+      await navigateToControllerFile("app");
     }
   },
   {
     checkFunction: isViewRelatedFile, 
     callback : async () => {
-      await changeToFileForControllerFilesWithAction();
+      await navigateToControllerFileWithAction();
     }
   },
   {
     checkFunction: isModelFile, 
     callback:  async () => {
-        await changeToFileForModelFiles("app");   
+        await navigateToModelFile("app");   
     } 
   },
   {
     checkFunction: isComponentFile, 
     callback : async () => {
-      await changeToFileForComponents(".rb");
+      await navigateToComponentFile("ruby");
     }
   },
 ];
@@ -38,13 +38,13 @@ export const htmlPairs: PairsType = [
   {
     checkFunction: isViewRelatedFile, 
     callback : async () => {
-      await changeToFileForViewFiles("app", "html");
+      await navigateToViewFile("app", "html");
     }
   },
   {
     checkFunction: isComponentFile, 
     callback : async () => {
-      await changeToFileForComponents(".html");
+      await navigateToComponentFile("view");
     }
   },
 ];
@@ -53,7 +53,7 @@ export const turboStreamPairs: PairsType = [
   {
     checkFunction: isViewRelatedFile, 
     callback : async () => {
-      await changeToFileForViewFiles("app", "turbo_stream");
+      await navigateToViewFile("app", "turbo_stream");
     }
   },
 ];
@@ -62,31 +62,31 @@ export const rspecPairs: PairsType = [
   {
     checkFunction: isControllerFile, 
     callback : async () => {
-      await changeToFileForControllerFiles("test");
+      await navigateToControllerFile("test");
     }
   },
   {
     checkFunction: (activeFileName) => isViewRelatedFile(activeFileName) && isTurboStreamViewFile(activeFileName), 
     callback : async () => {
-      await changeToFileForViewFiles("spec", "turbo_stream");
+      await navigateToViewFile("test", "turbo_stream");
     }
   },
   {
     checkFunction: (activeFileName) => isViewRelatedFile(activeFileName) && !isTurboStreamViewFile(activeFileName), 
     callback : async () => {
-      await changeToFileForViewFiles("spec", "html");
+      await navigateToViewFile("test", "html");
     }
   },
   {
     checkFunction: isModelFile, 
     callback : async () => {
-      await changeToFileForModelFiles("spec");
+      await navigateToModelFile("test");
     }
   },
   {
     checkFunction: isComponentFile, 
     callback : async () => {
-      await changeToFileForComponents("_spec.rb");
+      await navigateToComponentFile("test");
     }
   },
 ];

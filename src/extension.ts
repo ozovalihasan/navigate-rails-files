@@ -32,21 +32,21 @@ export function activate(context: ExtensionContext) {
 	// The commandId parameter must match the command field in package.json
 
 	context.subscriptions.push(
-		commands.registerCommand('navigate-rails-files.open-rb-file', async () => await navigateToFile(rbPairs))
+		commands.registerCommand('navigateRailsFiles.openRbFile', async () => await navigateToFile(rbPairs))
 	
 	);
 
 	context.subscriptions.push(
-		commands.registerCommand('navigate-rails-files.change-to-app-html-file', async () => await navigateToFile(htmlPairs))
+		commands.registerCommand('navigateRailsFiles.changeToAppHtmlFile', async () => await navigateToFile(htmlPairs))
 	);
 
 	context.subscriptions.push(
 
-		commands.registerCommand('navigate-rails-files.change-to-app-turbo-stream-file', async () => await navigateToFile(turboStreamPairs))
+		commands.registerCommand('navigateRailsFiles.changeToAppTurboStreamFile', async () => await navigateToFile(turboStreamPairs))
 	);
 
 	context.subscriptions.push(
-		commands.registerCommand('navigate-rails-files.change-to-rspec-file', async () => await navigateToFile(rspecPairs))
+		commands.registerCommand('navigateRailsFiles.changeToRspecFile', async () => await navigateToFile(rspecPairs))
 	);
 }
 

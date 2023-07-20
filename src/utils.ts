@@ -2,7 +2,7 @@ import { window, Range, Selection, Position, workspace, TextEditor, Uri } from '
 import {resolve} from "path";
 import * as fs from 'fs';
 
-export const changeToFileForModelFiles = async (folderName: "app" | "spec") => {
+export const navigateToModelFile = async (folderName: "app" | "test") => {
   const modelName = findModelName();
   if (!modelName) { 
     window.setStatusBarMessage("There is no a model name", 1000);
@@ -38,7 +38,7 @@ export const getControllerName = () => {
   return findActionAndController().controller;
 };
 
-export const changeToFileForControllerFiles = async (fileType: "app" | "test") => {
+export const navigateToControllerFile = async (fileType: "app" | "test") => {
   if (fileType === "app"){
     await openDocument("app/controllers/" + getControllerName() + "_controller.rb");
   } else {
@@ -60,7 +60,7 @@ export const changeToFileForControllerFiles = async (fileType: "app" | "test") =
   };
 };
 
-export const changeToFileForControllerFilesWithAction = async () => {
+export const navigateToControllerFileWithAction = async () => {
   const {controller, action} = findActionAndController();
   await openDocument(`app/controllers/${controller}_controller.rb`, () => moveCursorToAction(action));
 };
@@ -222,15 +222,15 @@ export const findActionAndController = () => {
   return {action, controller};
 };
 
-export const getTemplateEngines = () => workspace.getConfiguration('navigate-rails-files').get("template-engines") as string[];
+export const getTemplateEngines = () => workspace.getConfiguration('navigateRailsFiles').get("templateEngines") as string[];
 
 export const getActiveFileName = () => {
   return findEditor()?.document.fileName;
 };
 
-export const isSidecarUsedForComponents = () => workspace.getConfiguration('navigate-rails-files').get("use-view-components-sidecar") as boolean;
+export const isSidecarUsedForComponents = () => workspace.getConfiguration('navigateRailsFiles').get("useViewComponentsSidecar") as boolean;
 
-export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" | "_spec.rb") => {
+export const navigateToComponentFile = async (fileExtension: "ruby" | "view" | "test") => {
   let activeFileName = getActiveFileName();
   if (!activeFileName) {return;}
       
@@ -241,12 +241,12 @@ export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" |
       componentName = componentName.replace(/\/\w+$/, "");
     }
 
-    if (fileExtension === ".html") {
+    if (fileExtension === "view") {
       componentName = componentName.replace(/(\/\w+)$/, "$1$1");
     }
   }
       
-  if (fileExtension === ".html") {
+  if (fileExtension === "view") {
     const templateEngines = getTemplateEngines();
 
     for (let templateEngine of templateEngines) {
@@ -260,19 +260,19 @@ export const changeToFileForComponents = async (fileExtension: ".rb" | ".html" |
 
     window.setStatusBarMessage("Any valid view file couldn't be found.", 1000);
 
-  } else if (fileExtension === "_spec.rb"){
+  } else if (fileExtension === "test"){
 
     if (!(await openTestFile(componentName))) {
       window.setStatusBarMessage("A test file for the component couldn't be found.", 1000);
     }
 
-  } else if (fileExtension === ".rb"){
+  } else if (fileExtension === "ruby"){
     await openDocument("app/" + componentName + ".rb");
   };
 };
 
 
-export const changeToFileForViewFiles = async (folderName: "app" | "spec", viewType: "html" | "turbo_stream") => {
+export const navigateToViewFile = async (folderName: "app" | "test", viewType: "html" | "turbo_stream") => {
   const {controller, action} = findActionAndController();
   if (!controller){ return; }
 

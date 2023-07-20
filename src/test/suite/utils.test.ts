@@ -371,12 +371,12 @@ suite('Utils Test Suite', () => {
     });
   });
 
-  suite('Test changeToFileForModelFiles function', () => {
+  suite('Test navigateToModelFile function', () => {
     test('if a model exists', async () => {
       sinon.stub(utils, "findModelName").returns("product");
       const openDocument = sinon.stub(utils, "openDocument");
 
-      await utils.changeToFileForModelFiles("app");
+      await utils.navigateToModelFile("app");
       
       expect(openDocument.calledWith("app/models/product.rb")).to.be.true;
     });
@@ -385,12 +385,12 @@ suite('Utils Test Suite', () => {
       sinon.stub(utils, "findModelName");
       const statusBarMessage = sinon.stub(vscode.window, "setStatusBarMessage");
 
-      await utils.changeToFileForModelFiles("app");
+      await utils.navigateToModelFile("app");
       expect(statusBarMessage.called).to.be.true;
     });
   });
   
-  suite('Test changeToFileForComponents function', () => {
+  suite('Test navigateToComponentFile function', () => {
     let checkFileExists = null as any;
     let openDocument = null as any;
 
@@ -408,7 +408,7 @@ suite('Utils Test Suite', () => {
       test('if view template will be opened', async () => {
         checkFileExists.withArgs("app/components/mock_component.html.erb").returns(true);
             
-        await utils.changeToFileForComponents(".html");
+        await utils.navigateToComponentFile("view");
         
         expect(openDocument.calledWith("app/components/mock_component.html.erb")).to.be.true;    
       });
@@ -418,7 +418,7 @@ suite('Utils Test Suite', () => {
         sinon.stub(utils, "getTemplateEngines").returns(["erb", "custom_engine"]);
         checkFileExists.withArgs("app/components/mock_component.html.custom_engine").returns(true);
             
-        await utils.changeToFileForComponents(".html");
+        await utils.navigateToComponentFile("view");
         
         expect(openDocument.calledWith("app/components/mock_component.html.custom_engine")).to.be.true;    
       });
@@ -426,13 +426,13 @@ suite('Utils Test Suite', () => {
       test("if a view template will be opened but it doesn't exist", async () => {
         const statusBarMessage = sinon.stub(vscode.window, "setStatusBarMessage");
 
-        await utils.changeToFileForComponents(".html");
+        await utils.navigateToComponentFile("view");
         
         expect(statusBarMessage.called).to.be.true;    
       });
       
       test('if the ruby file of a component will be opened', async () => {
-        await utils.changeToFileForComponents(".rb");
+        await utils.navigateToComponentFile("ruby");
         
         expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
@@ -440,7 +440,7 @@ suite('Utils Test Suite', () => {
       test('if the rspec file of a component will be opened', async () => {
         checkFileExists.withArgs("spec/components/mock_component_spec.rb").returns(true);
 
-        await utils.changeToFileForComponents("_spec.rb");
+        await utils.navigateToComponentFile("test");
         
         expect(openDocument.calledWith("spec/components/mock_component_spec.rb")).to.be.true;    
       });
@@ -448,7 +448,7 @@ suite('Utils Test Suite', () => {
       test('if the minitest file of a component will be opened', async () => {
         checkFileExists.withArgs("test/components/mock_component_test.rb").returns(true);
 
-        await utils.changeToFileForComponents("_spec.rb");
+        await utils.navigateToComponentFile("test");
         
         expect(openDocument.calledWith("test/components/mock_component_test.rb")).to.be.true;    
       });
@@ -460,7 +460,7 @@ suite('Utils Test Suite', () => {
       });
 
       test('if the ruby file of a component will be opened', async () => {
-        await utils.changeToFileForComponents(".rb");
+        await utils.navigateToComponentFile("ruby");
         
         expect(openDocument.calledWith("app/components/mock_name/component.rb")).to.be.true;    
       });
@@ -473,7 +473,7 @@ suite('Utils Test Suite', () => {
       });
 
       test('if the ruby file of a component will be opened', async () => {
-        await utils.changeToFileForComponents(".rb");
+        await utils.navigateToComponentFile("ruby");
         
         expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
@@ -486,7 +486,7 @@ suite('Utils Test Suite', () => {
       });
 
       test('if the ruby file of a component will be opened', async () => {
-        await utils.changeToFileForComponents(".rb");
+        await utils.navigateToComponentFile("ruby");
         
         expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
@@ -499,7 +499,7 @@ suite('Utils Test Suite', () => {
       });
 
       test('if the ruby file of a component will be opened', async () => {
-        await utils.changeToFileForComponents(".rb");
+        await utils.navigateToComponentFile("ruby");
         
         expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
@@ -516,7 +516,7 @@ suite('Utils Test Suite', () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb');
         checkFileExists.withArgs("app/components/mock_component/mock_component.html.erb").returns(true);
         
-        await utils.changeToFileForComponents(".html");
+        await utils.navigateToComponentFile("view");
         
         expect(openDocument.calledWith("app/components/mock_component/mock_component.html.erb")).to.be.true;    
       });
@@ -525,21 +525,21 @@ suite('Utils Test Suite', () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component.rb');
         checkFileExists.withArgs("app/components/mock_component/mock_component.html.slim").returns(true);
         
-        await utils.changeToFileForComponents(".html");
+        await utils.navigateToComponentFile("view");
         
         expect(openDocument.calledWith("app/components/mock_component/mock_component.html.slim")).to.be.true;    
       });
 
       test('if a ruby file of a component will be opened and a view template(html.erb) is the current file', async () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb');
-        await utils.changeToFileForComponents(".rb");
+        await utils.navigateToComponentFile("ruby");
         
         expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
 
       test('if a ruby file of a component will be opened and a view template(html.slim) is the current file', async () => {
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim');
-        await utils.changeToFileForComponents(".rb");
+        await utils.navigateToComponentFile("ruby");
         
         expect(openDocument.calledWith("app/components/mock_component.rb")).to.be.true;    
       });
@@ -547,7 +547,7 @@ suite('Utils Test Suite', () => {
       test('if a rspec file of a component will be opened and a view template(html.erb) is the current file', async () => {
         checkFileExists.withArgs("spec/components/mock_component_spec.rb").returns(true);
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.erb');
-        await utils.changeToFileForComponents("_spec.rb");
+        await utils.navigateToComponentFile("test");
         
         expect(openDocument.calledWith("spec/components/mock_component_spec.rb")).to.be.true;    
       });
@@ -555,7 +555,7 @@ suite('Utils Test Suite', () => {
       test('if a rspec file of a component will be opened and a view template(html.slim) is the current file', async () => {
         checkFileExists.withArgs("spec/components/mock_component_spec.rb").returns(true);
         sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/components/mock_component/mock_component.html.slim');
-        await utils.changeToFileForComponents("_spec.rb");
+        await utils.navigateToComponentFile("test");
         
         expect(openDocument.calledWith("spec/components/mock_component_spec.rb")).to.be.true;    
       });
@@ -563,13 +563,13 @@ suite('Utils Test Suite', () => {
     });
   });
   
-  suite("Test changeToFileForControllerFiles function", () => {
+  suite("Test navigateToControllerFile function", () => {
     test("if the current file is a controller file ", async () => {
       sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/app/controllers/mock_controller.rb');
       sinon.stub(utils, "checkFileExists").withArgs('spec/requests/mock_spec.rb').returns(true);
       
       const openDocument = sinon.stub(utils, "openDocument");
-      await utils.changeToFileForControllerFiles("test");
+      await utils.navigateToControllerFile("test");
       
       expect(openDocument.calledWith('spec/requests/mock_spec.rb')).to.be.true;    
     });
@@ -578,17 +578,17 @@ suite('Utils Test Suite', () => {
       sinon.stub(utils, "getActiveFileName").returns('upper_folder/mock_root_folder/spec/requests/mock_spec.rb');
       
       const openDocument = sinon.stub(utils, "openDocument");
-      await utils.changeToFileForControllerFiles("app");
+      await utils.navigateToControllerFile("app");
       
       expect(openDocument.calledWith('app/controllers/mock_controller.rb')).to.be.true;    
     });
   });
 
-  test("Test changeToFileForControllerFilesWithAction function", async () => {
+  test("Test navigateToControllerFileWithAction function", async () => {
     sinon.stub(utils, "findActionAndController").returns({controller: "products", action: "index"});
     
     const openDocument = sinon.stub(utils, "openDocument");
-    await utils.changeToFileForControllerFilesWithAction();
+    await utils.navigateToControllerFileWithAction();
     console.warn();
     
     expect(openDocument.calledWith("app/controllers/products_controller.rb")).to.be.true;    
@@ -597,7 +597,7 @@ suite('Utils Test Suite', () => {
   test("Test getTemplateEngines function", async () => {
     sinon.stub(workspace, 'getConfiguration').returns(
       {
-        get: sinon.stub().withArgs('template-engines').returns(["erb", "custom_engine"]),
+        get: sinon.stub().withArgs('templateEngines').returns(["erb", "custom_engine"]),
       } as any
     );
     
@@ -618,7 +618,7 @@ suite('Utils Test Suite', () => {
     test("it can be changed by help of configuration", () => {
       sinon.stub(workspace, 'getConfiguration').returns(
         {
-          get: sinon.stub().withArgs("use-view-components-sidecar").returns(true),
+          get: sinon.stub().withArgs("useViewComponentsSidecar").returns(true),
         } as any
       );
 
@@ -627,7 +627,7 @@ suite('Utils Test Suite', () => {
     
   });
 
-  suite("Test changeToFileForViewFiles function", () => {
+  suite("Test navigateToViewFile function", () => {
     let checkFileExists = null as any;
     let openDocument = null as any;
     
@@ -643,7 +643,7 @@ suite('Utils Test Suite', () => {
         test("if action.html.erb file exists", async () => {
           checkFileExists.withArgs("app/views/products/index.html.erb").returns(true);
           
-          await utils.changeToFileForViewFiles("app", "html");
+          await utils.navigateToViewFile("app", "html");
           
           expect(openDocument.calledWith("app/views/products/index.html.erb")).to.be.true;    
         }); 
@@ -651,7 +651,7 @@ suite('Utils Test Suite', () => {
         test("if action.html.erb file doesn't exist", async () => {
           checkFileExists.withArgs("app/views/products/index.turbo_stream.erb").returns(true);
           
-          await utils.changeToFileForViewFiles("app", "html");
+          await utils.navigateToViewFile("app", "html");
           
           expect(openDocument.calledWith("app/views/products/index.turbo_stream.erb")).to.be.true;    
         }); 
@@ -660,7 +660,7 @@ suite('Utils Test Suite', () => {
       test("if file extension is 'turbo_stream'", async () => {
         checkFileExists.withArgs("app/views/products/index.turbo_stream.erb").returns(true);
   
-        await utils.changeToFileForViewFiles("app", "turbo_stream");
+        await utils.navigateToViewFile("app", "turbo_stream");
         
         expect(openDocument.calledWith("app/views/products/index.turbo_stream.erb")).to.be.true;    
       });
@@ -677,7 +677,7 @@ suite('Utils Test Suite', () => {
         test("if action.html.custom_engine file exists", async () => {
           checkFileExists.withArgs("app/views/products/index.html.custom_engine").returns(true);
           
-          await utils.changeToFileForViewFiles("app", "html");
+          await utils.navigateToViewFile("app", "html");
           
           expect(openDocument.calledWith("app/views/products/index.html.custom_engine")).to.be.true;    
         }); 
@@ -685,7 +685,7 @@ suite('Utils Test Suite', () => {
         test("if action.html.custom_engine file doesn't exist", async () => {
           checkFileExists.withArgs("app/views/products/index.turbo_stream.custom_engine").returns(true);
           
-          await utils.changeToFileForViewFiles("app", "html");
+          await utils.navigateToViewFile("app", "html");
           
           expect(openDocument.calledWith("app/views/products/index.turbo_stream.custom_engine")).to.be.true;    
         }); 
@@ -694,7 +694,7 @@ suite('Utils Test Suite', () => {
       test("if file extension is 'turbo_stream'", async () => {
         checkFileExists.withArgs("app/views/products/index.turbo_stream.custom_engine").returns(true);
   
-        await utils.changeToFileForViewFiles("app", "turbo_stream");
+        await utils.navigateToViewFile("app", "turbo_stream");
         
         expect(openDocument.calledWith("app/views/products/index.turbo_stream.custom_engine")).to.be.true;    
       });
@@ -706,7 +706,7 @@ suite('Utils Test Suite', () => {
         test("if action.html.slim file exists", async () => {
           checkFileExists.withArgs("app/views/products/index.html.slim").returns(true);
           
-          await utils.changeToFileForViewFiles("app", "html");
+          await utils.navigateToViewFile("app", "html");
           
           expect(openDocument.calledWith("app/views/products/index.html.slim")).to.be.true;    
         }); 
@@ -714,7 +714,7 @@ suite('Utils Test Suite', () => {
         test("if action.html.slim file doesn't exist", async () => {
           checkFileExists.withArgs("app/views/products/index.turbo_stream.slim").returns(true);
           
-          await utils.changeToFileForViewFiles("app", "html");
+          await utils.navigateToViewFile("app", "html");
           
           expect(openDocument.calledWith("app/views/products/index.turbo_stream.slim")).to.be.true;    
         }); 
@@ -723,7 +723,7 @@ suite('Utils Test Suite', () => {
       test("if file extension is 'turbo_stream'", async () => {
         checkFileExists.withArgs("app/views/products/index.turbo_stream.slim").returns(true);
   
-        await utils.changeToFileForViewFiles("app", "turbo_stream");
+        await utils.navigateToViewFile("app", "turbo_stream");
         
         expect(openDocument.calledWith("app/views/products/index.turbo_stream.slim")).to.be.true;    
       });
@@ -732,7 +732,7 @@ suite('Utils Test Suite', () => {
     test("if there is no any valid file", async () => {
       const statusBarMessage = sinon.stub(vscode.window, "setStatusBarMessage");
 
-      await utils.changeToFileForViewFiles("app", "turbo_stream");
+      await utils.navigateToViewFile("app", "turbo_stream");
       
       expect(statusBarMessage.called).to.be.true;    
       expect(openDocument.called).to.be.false;    

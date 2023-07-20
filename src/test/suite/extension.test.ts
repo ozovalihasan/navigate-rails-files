@@ -60,11 +60,11 @@ suite('Extension Test Suite', () => {
 	
 	window.showInformationMessage('Start all tests.');
 
-	suite('Test "navigate-rails-files.open-rb-file" command', () => {
+	suite('Test "navigateRailsFiles.openRbFile" command', () => {
 		let runExpectation: (filePath: string, expectedFilePath?: string, callback?: Function) => Promise<void>;
 		
 		before(() => {
-			runExpectation = setExpectation('navigate-rails-files.open-rb-file');
+			runExpectation = setExpectation('navigateRailsFiles.openRbFile');
 		});
 
 		suite('for view related files', () => {
@@ -111,11 +111,11 @@ suite('Extension Test Suite', () => {
 		});
 	});
 
-	suite('Test "navigate-rails-files.change-to-app-html-file" command', () => {
+	suite('Test "navigateRailsFiles.changeToAppHtmlFile" command', () => {
 		let runExpectation: (filePath: string, expectedFilePath?: string, callback?: Function) => Promise<void>;
 		
 		before(() => {
-			runExpectation = setExpectation('navigate-rails-files.change-to-app-html-file');
+			runExpectation = setExpectation('navigateRailsFiles.changeToAppHtmlFile');
 		});
 		
 		suite('for views', () => {
@@ -182,11 +182,11 @@ suite('Extension Test Suite', () => {
 		});
 	});
 
-	suite('Test "navigate-rails-files.change-to-app-turbo-stream-file" command', () => {
+	suite('Test "navigateRailsFiles.changeToAppTurboStreamFile" command', () => {
 		let runExpectation: (filePath: string, expectedFilePath?: string, callback?: Function) => Promise<void>;
 		
 		before(() => {
-			runExpectation = setExpectation('navigate-rails-files.change-to-app-turbo-stream-file');
+			runExpectation = setExpectation('navigateRailsFiles.changeToAppTurboStreamFile');
 		});
 		
 		suite('for views', () => {
@@ -243,11 +243,11 @@ suite('Extension Test Suite', () => {
 		});
 	});
 
-	suite('Test "navigate-rails-files.change-to-rspec-file" command', () => {
+	suite('Test "navigateRailsFiles.changeToRspecFile" command', () => {
 		let runExpectation: (filePath: string, expectedFilePath?: string, callback?: Function) => Promise<void>;
 		
 		before(() => {
-			runExpectation = setExpectation('navigate-rails-files.change-to-rspec-file');
+			runExpectation = setExpectation('navigateRailsFiles.changeToRspecFile');
 		});
 
 		suite('for views', () => {

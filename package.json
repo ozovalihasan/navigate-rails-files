@@ -18,73 +18,73 @@
   "contributes": {
     "commands": [
       {
-        "command": "navigate-rails-files.open-rb-file",
+        "command": "navigateRailsFiles.openRbFile",
         "title": "Open files including .rb in the folder '/app'",
-        "when": "navigate-rails-files.allow-to-open-rb-file"
+        "when": "navigateRailsFiles.allowToOpenRbFile"
       },
       {
-        "command": "navigate-rails-files.change-to-app-html-file",
+        "command": "navigateRailsFiles.changeToAppHtmlFile",
         "title": "Open files ending with turbo_stream.erb or html.erb in the folder '/app'",
-        "when": "navigate-rails-files.allow-to-open-app-html-file"
+        "when": "navigateRailsFiles.allowToOpenAppHtmlFile"
       },
       {
-        "command": "navigate-rails-files.change-to-app-turbo-stream-file",
+        "command": "navigateRailsFiles.changeToAppTurboStreamFile",
         "title": "Open files ending with turbo_stream.erb or html.erb in the folder '/app'",
-        "when": "navigate-rails-files.allow-to-open-app-turbo-stream-file"
+        "when": "navigateRailsFiles.allowToOpenAppTurboStreamFile"
       },
       {
-        "command": "navigate-rails-files.change-to-rspec-file",
+        "command": "navigateRailsFiles.changeToRspecFile",
         "title": "Open files in the folder '/spec'",
-        "when": "navigate-rails-files.allow-to-open-rspec-file"
+        "when": "navigateRailsFiles.allowToOpenRspecFile"
       }
     ],
     "keybindings": [
       {
-        "command": "navigate-rails-files.open-rb-file",
+        "command": "navigateRailsFiles.openRbFile",
         "key": "alt+i"
       },
       {
-        "command": "navigate-rails-files.change-to-app-html-file",
+        "command": "navigateRailsFiles.changeToAppHtmlFile",
         "key": "alt+o"
       },
       {
-        "command": "navigate-rails-files.change-to-app-turbo-stream-file",
+        "command": "navigateRailsFiles.changeToAppTurboStreamFile",
         "key": "alt+u"
       },
       {
-        "command": "navigate-rails-files.change-to-rspec-file",
+        "command": "navigateRailsFiles.changeToRspecFile",
         "key": "alt+p"
       }
     ],
     "configuration": {
       "type": "object",
       "properties": {
-        "navigate-rails-files.template-engines": {
+        "navigateRailsFiles.templateEngines": {
           "type": "array",
           "default": ["erb", "slim", "haml"],
           "description": "Template engines to check file names. .erb files will be checked lastly as default if it is not included"
         },
-        "navigate-rails-files.use-view-components-sidecar": {
+        "navigateRailsFiles.useViewComponentsSidecar": {
           "type": "boolean",
           "default": false,
           "description": "Enable to use view components in the sidecar directory"
         },
-        "navigate-rails-files.allow-to-open-rb-file": {
+        "navigateRailsFiles.allowToOpenRbFile": {
           "type": "boolean",
           "default": true,
           "description": "Enable to open files ending with .rb in the folder '/app'"
         },
-        "navigate-rails-files.allow-to-open-app-html-file": {
+        "navigateRailsFiles.allowToOpenAppHtmlFile": {
           "type": "boolean",
           "default": true,
           "description": "Enable to open files ending with .html.erb or .turbo_stream.erb in the folder '/app'"
         },
-        "navigate-rails-files.allow-to-open-app-turbo-stream-file": {
+        "navigateRailsFiles.allowToOpenAppTurboStreamFile": {
           "type": "boolean",
           "default": true,
           "description": "Enable to open files ending with .turbo_stream.erb in the folder '/app'"
         },
-        "navigate-rails-files.allow-to-open-rspec-file": {
+        "navigateRailsFiles.allowToOpenRspecFile": {
           "type": "boolean",
           "default": true,
           "description": "Enable to open files in the folder '/spec'"

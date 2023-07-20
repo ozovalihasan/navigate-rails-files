@@ -1,4 +1,4 @@
-# navigate-rails-files README
+# navigateRailsFiles README
 
 
 The purpose of this extension is to navigate Rails files by help of shortcuts.
@@ -54,7 +54,7 @@ Reach out to us at one of the following places!
 
 Contributions, issues, and feature requests are welcome!
 
-Feel free to check the [issues page](https://github.com/ozovalihasan/navigate-rails-files/issues).
+Feel free to check the [issues page](https://github.com/ozovalihasan/navigateRailsFiles/issues).
 
 ## Show your support
 
