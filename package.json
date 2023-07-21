@@ -62,7 +62,7 @@
         "navigateRailsFiles.templateEngines": {
           "type": "array",
           "default": ["erb", "slim", "haml"],
-          "description": "Template engines to check file names. .erb files will be checked lastly as default if it is not included"
+          "description": "Template engines to check file names"
         },
         "navigateRailsFiles.useViewComponentsSidecar": {
           "type": "boolean",
