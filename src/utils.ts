@@ -272,8 +272,8 @@ export const navigateToViewFile = async (folderName: "app" | "test", viewType: "
  
   let viewTypes = viewType === "html" ? ( ["html", "turbo_stream"] as const ) : ( ["turbo_stream"] as const );
   
-  for (let templateEngine of templateEngines) {
-    for (let viewType of viewTypes) {
+  for (let viewType of viewTypes) {
+    for (let templateEngine of templateEngines) {
       fullPath = `views/${controller}/${action}.${viewType}.${templateEngine}`;
 
       if (folderName === 'app') {
