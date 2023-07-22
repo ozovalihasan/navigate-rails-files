@@ -194,6 +194,10 @@ export const findActionAndController = () => {
     const fileTextToCursor = getTextUntilCursor();
 
     action = fileTextToCursor.match(/def\s*(?<action>\w+)(?!.*def\s*\w+)/s)?.groups?.action || "";
+    if (!action && !inActionBlock(action)) {
+      window.setStatusBarMessage('Please select an action block', 1000); 
+      action = "";
+    }
 
     controller = activeFileName.match(/app\/controllers\/(?<controller>.*)_controller.rb$/)?.groups?.controller || "";
     
@@ -264,7 +268,11 @@ export const navigateToComponentFile = async (fileType: "ruby" | "view" | "test"
 
 export const navigateToViewFile = async (folderName: "app" | "test", viewType: "html" | "turbo_stream") => {
   const {controller, action} = findActionAndController();
-  if (!controller){ return; }
+  if (!action){ 
+    window.setStatusBarMessage("An action couldn't be found", 1000);
+
+    return; 
+  }
 
   let fullPath = "";
   const templateEngines = getTemplateEngines();
