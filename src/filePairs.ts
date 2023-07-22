@@ -55,7 +55,7 @@ export const turboStreamPairs: PairsType = [
     callback : async () => {
       await navigateToViewFile("app", "turbo_stream");
     }
-  },
+  }
 ];
 
 export const rspecPairs: PairsType = [

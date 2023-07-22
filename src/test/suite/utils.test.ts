@@ -574,7 +574,6 @@ suite('Utils Test Suite', () => {
     
     const openDocument = sinon.stub(utils, "openDocument");
     await utils.navigateToControllerFileWithAction();
-    console.warn();
     
     expect(openDocument.calledWith("app/controllers/products_controller.rb")).to.be.true;    
   });

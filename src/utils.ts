@@ -1,5 +1,4 @@
 import { window, Range, Selection, Position, workspace, TextEditor, Uri } from 'vscode';
-import {resolve} from "path";
 import * as fs from 'fs';
 
 export const navigateToModelFile = async (folderName: "app" | "test") => {
@@ -69,7 +68,7 @@ export const openDocument = async (filePath: string, callback: Function | null =
     return;
   }
       
-  if (getActiveFileName() === resolve(fullPath)) {
+  if (getActiveFileName() === fullPath) {
     window.setStatusBarMessage("The requested page is already opened.", 1000);
   }
       
@@ -193,7 +192,7 @@ export const findActionAndController = () => {
   } else if ( isControllerFile(activeFileName) ) {
     
     const fileTextToCursor = getTextUntilCursor();
-    
+
     action = fileTextToCursor.match(/def\s*(?<action>\w+)(?!.*def\s*\w+)/s)?.groups?.action || "";
 
     controller = activeFileName.match(/app\/controllers\/(?<controller>.*)_controller.rb$/)?.groups?.controller || "";
