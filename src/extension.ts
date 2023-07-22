@@ -3,6 +3,7 @@
 import { commands, window, ExtensionContext } from 'vscode';
 import { 
 	findEditor,
+	getActiveFileName,
 } from './utils';
 import { PairsType, htmlPairs, rbPairs, rspecPairs, turboStreamPairs } from './filePairs';
 
@@ -10,10 +11,14 @@ import { PairsType, htmlPairs, rbPairs, rspecPairs, turboStreamPairs } from './f
 // Your extension is activated the very first time the command is executed
 export const navigateToFile = async (pairs: PairsType) => {
 	const editor = findEditor();
-
+	
 	if (editor) {
-		let activeFileName = editor.document.fileName;
-
+		let activeFileName = getActiveFileName();
+		if (!activeFileName) {
+			window.setStatusBarMessage("Any open file couldn't be found", 1000);
+			return;
+		}
+	
 		for (let pair of pairs) {
 			if (pair.checkFunction(activeFileName)) {
 				await pair.callback();
@@ -23,6 +28,7 @@ export const navigateToFile = async (pairs: PairsType) => {
 		
 		window.setStatusBarMessage("Your file is not suitable to navigate", 1000);
 	}
+	
 };
 
 export function activate(context: ExtensionContext) {
