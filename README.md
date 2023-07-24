@@ -1,43 +1,64 @@
-# navigateRailsFiles README
+<h2 align="center">
+  <img src="./img/icon.png" alt="icon"> 
+  
+  Navigate Rails Files
 
+  <img src="./img/project.gif" alt="project gif">
+  <br>
+</h2>
 
-The purpose of this extension is to navigate Rails files by help of shortcuts.
+The purpose of this extension is to navigate Rails files with the help of shortcuts.
+
+- Template engines `.erb`, `.slim`, and `haml` are already supported for view files. They can be customized by changing `navigateRailsFiles.templateEngines` in the VSCode settings.
+
+- RSpec is used for test files, but Minitest has not been supported yet.
+
+- [ViewComponent](https://viewcomponent.org/) is supported out of the box. If [sidecar directories](https://viewcomponent.org/guide/generators.html#place-the-view-in-a-sidecar-directory) are being used, set `navigateRailsFiles.useViewComponentsSidecar` to `true`.
+### Navigate to ruby files
+Shortcut: <kbd>Alt</kbd> + <kbd>I</kbd>
+![Alt text](./img/navigate-to-ruby-file.png)
+
+### Navigate to files ending with `.html`
+Shortcut: <kbd>Alt</kbd> + <kbd>O</kbd>
+![Alt text](./img/navigate-to-html-file.png)
+
+- Files ending with template engines (`erb`, `slim`, and `haml` as default or custom ones) are checked one-by-one.
+
+- If there is no html file, a turbo_stream file is opened if it exists.
+
+- So the order of checked files is as follows: `html.erb`, `html.slim`, `html.haml`, `turbo_stream.erb`, `turbo_stream.slim`, and `turbo_stream.haml`.
+
+### Navigate to files ending with `.turbo_stream`
+Shortcut: <kbd>Alt</kbd> + <kbd>U</kbd>
+![Alt text](./img/navigate-to-turbo-stream-file.png)
+
+### Navigate to test files
+Shortcut: <kbd>Alt</kbd> + <kbd>P</kbd>
+![Alt text](./img/navigate-to-test-file.png)
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `navigateRailsFiles.allowToOpenRbFile`: Allows using the shortcut to open Ruby files ("true" by default).
+* `navigateRailsFiles.allowToOpenAppHtmlFile`: Allows using the shortcut to open view (.html) files ("true" by default).
+* `navigateRailsFiles.allowToOpenAppTurboStreamFile`: Allows using the shortcut to open view (.turbo_stream) files ("true" by default).
+* `navigateRailsFiles.allowToOpenRspecFile`: Allows using the shortcut to open test (RSpec) files ("true" by default).
 
-## Release Notes
+## How to Test the Extension Locally
 
-### 0.0.1
+- Press "F1" and select "Debug: Select and Start Debugging." Then select "Extension Tests."
 
-Add commands to open models, controllers, views and their tests.
+## How to Use a Custom Version of the Extension
 
-## Following extension guidelines
+The extension can be customized by any developer easily. Please follow the steps below to use your custom version.
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+- Clone the repository.
+- Run `npm install -g @vscode/vsce` to install [vsce](https://github.com/microsoft/vscode-vsce) if necessary.
+- Customize any part of the project.
+- Run `vsce package`.
+- Open your VSCode.
+- Press "F1" and select "Extensions: Install from VSIX." Then, select the generated file ending with `.vsix`.
 
 ## Authors
 
@@ -48,7 +69,6 @@ Reach out to us at one of the following places!
 - LinkedIn: [Hasan Ozovali](https://www.linkedin.com/in/hasan-ozovali/)
 - Github: [@ozovalihasan](https://github.com/ozovalihasan)
 - Twitter: [@ozovalihasan](https://twitter.com/ozovalihasan)
-- Mail: [ozovalihasan@gmail.com](ozovalihasan@gmail.com)
 
 ## Contributing 🤝
 
@@ -56,12 +76,12 @@ Contributions, issues, and feature requests are welcome!
 
 Feel free to check the [issues page](https://github.com/ozovalihasan/navigateRailsFiles/issues).
 
-## Show your support
+## Show Your Support
 
 Give a ⭐️ if you like the extension!
 
 ## License
 
-[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
+[![License](https://img.shields.io/:license-mit-blue.svg?style=flat-square)](https://badges.mit-license.org/)
 
-- **[MIT license](http://opensource.org/licenses/mit-license.php)**
+- **[MIT license](https://opensource.org/license/mit/)**
