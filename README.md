@@ -14,11 +14,12 @@ The purpose of this extension is to navigate Rails files with the help of shortc
 - RSpec is used for test files, but Minitest has not been supported yet.
 
 - [ViewComponent](https://viewcomponent.org/) is supported out of the box. If [sidecar directories](https://viewcomponent.org/guide/generators.html#place-the-view-in-a-sidecar-directory) are being used, set `navigateRailsFiles.useViewComponentsSidecar` to `true`.
-### Navigate to ruby files
+
+### Navigate to Ruby Files
 Shortcut: <kbd>Alt</kbd> + <kbd>I</kbd>
 ![Alt text](./img/navigate-to-ruby-file.png)
 
-### Navigate to files ending with `.html`
+### Navigate to Files Ending with `.html`
 Shortcut: <kbd>Alt</kbd> + <kbd>O</kbd>
 ![Alt text](./img/navigate-to-html-file.png)
 
@@ -26,13 +27,13 @@ Shortcut: <kbd>Alt</kbd> + <kbd>O</kbd>
 
 - If there is no html file, a turbo_stream file is opened if it exists.
 
-- So the order of checked files is as follows: `html.erb`, `html.slim`, `html.haml`, `turbo_stream.erb`, `turbo_stream.slim`, and `turbo_stream.haml`.
+- The order of checked files is as follows: `html.erb`, `html.slim`, `html.haml`, `turbo_stream.erb`, `turbo_stream.slim`, and `turbo_stream.haml`.
 
-### Navigate to files ending with `.turbo_stream`
+### Navigate to Files Ending with `.turbo_stream`
 Shortcut: <kbd>Alt</kbd> + <kbd>U</kbd>
 ![Alt text](./img/navigate-to-turbo-stream-file.png)
 
-### Navigate to test files
+### Navigate to Test Files
 Shortcut: <kbd>Alt</kbd> + <kbd>P</kbd>
 ![Alt text](./img/navigate-to-test-file.png)
 
