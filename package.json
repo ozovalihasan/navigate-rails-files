@@ -20,7 +20,7 @@
   ],
   "icon": "img/icon.png",
   "activationEvents": [
-    "*"
+    "workspaceContains:**/bin/rails"
   ],
   "main": "./out/extension.js",
   "contributes": {
