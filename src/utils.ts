@@ -107,6 +107,19 @@ export const setRegExp = (...arr: (string|RegExp|(string|RegExp)[])[]) => (
   )
 );
 
+export const isCurrentTextHavingComponent = (_: string) => {
+  const editor = findEditor();
+
+  if (editor) {
+    const selectedText = editor.document.getText(editor.selection)
+    let componentName = selectedText.match(/component[^\n]*/);
+    
+    return Boolean(componentName);
+  } else {
+    return false;
+  }
+};
+
 export const isViewRelatedFile = (fileName: string) : Boolean => (isViewFile(fileName) || isControllerFile(fileName));
 
 export const isViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isTurboStreamViewFile(fileName));
@@ -224,6 +237,33 @@ export const getActiveFileName = () => {
 
 export const isSidecarUsedForComponents = () => workspace.getConfiguration('navigateRailsFiles').get("useViewComponentsSidecar") as boolean;
 
+export const navigateToComponentFileFromCurrentLine = async () => {
+  const editor = findEditor();
+
+  if (editor) {
+    const cursorPosition = editor.selection.active
+    const currentLineText = editor.document.lineAt(cursorPosition.line).text
+    let componentName = currentLineText.match(/(\'|\")(?<componentName>[^\s\,]*)(\'|\")/)?.groups?.componentName;
+    window.setStatusBarMessage(componentName || "===", 1000);        
+    
+    if (!componentName) {
+      return;
+    }
+   
+    const templateEngines = getTemplateEngines();
+
+    for (let templateEngine of templateEngines) {
+      let fullPathWithTemplateEngine = `app/components/${componentName}/component.html.${templateEngine}`;
+      
+      if (checkFileExists(fullPathWithTemplateEngine)) {
+        await openDocument(fullPathWithTemplateEngine);
+        return;
+      };
+    };
+    
+    window.setStatusBarMessage("Any valid component.html file couldn't be found.", 1000);        
+  }
+}
 export const navigateToComponentFile = async (fileType: "ruby" | "view" | "test") => {
   let activeFileName = getActiveFileName();
   if (!activeFileName) {return;}

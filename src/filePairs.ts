@@ -1,4 +1,18 @@
-import { navigateToComponentFile, navigateToControllerFile, navigateToControllerFileWithAction, navigateToModelFile, navigateToViewFile, getActiveFileName, isComponentFile, isControllerFile, isModelFile, isControllerTestFile, isTurboStreamViewFile, isViewRelatedFile } from "./utils";
+import { 
+  navigateToComponentFile, 
+  navigateToControllerFile, 
+  navigateToControllerFileWithAction, 
+  navigateToModelFile, 
+  navigateToViewFile, 
+  isComponentFile, 
+  isControllerFile, 
+  isModelFile, 
+  isControllerTestFile, 
+  isTurboStreamViewFile, 
+  isViewRelatedFile, 
+  isCurrentTextHavingComponent,
+  navigateToComponentFileFromCurrentLine 
+} from "./utils";
 
 export type PairType = {
   checkFunction: (fileName: string) => Boolean;
@@ -35,6 +49,12 @@ export const rbPairs: PairsType = [
 ];
 
 export const htmlPairs: PairsType = [
+  {
+    checkFunction: isCurrentTextHavingComponent, 
+    callback : async () => {
+      await navigateToComponentFileFromCurrentLine();
+    }
+  },
   {
     checkFunction: isViewRelatedFile, 
     callback : async () => {

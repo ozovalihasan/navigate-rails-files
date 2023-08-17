@@ -32,6 +32,11 @@ suite('Utils Test Suite', () => {
 	
 	window.showInformationMessage('Start all tests.');
 
+  test('Test isCurrentTextHavingComponent function', () => {
+    "This will be added"
+    expect(false).to.be.true;
+  });
+
   test('Test isViewRelatedFile function', () => {
     expect(utils.isViewRelatedFile('app/controllers/products_controller.rb')).to.be.true;
     expect(utils.isViewRelatedFile('app/views/products/index.html.erb')).to.be.true;
@@ -609,6 +614,11 @@ suite('Utils Test Suite', () => {
       expect(utils.isSidecarUsedForComponents()).to.be.true;
     });
     
+  });
+
+  test("Test navigateToComponentFileFromCurrentLine function", () => {
+    "Test will be added" 
+    expect(false).to.be.true;
   });
 
   suite("Test navigateToViewFile function", () => {
