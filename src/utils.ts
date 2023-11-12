@@ -107,12 +107,12 @@ export const setRegExp = (...arr: (string|RegExp|(string|RegExp)[])[]) => (
   )
 );
 
-export const isCurrentTextHavingComponent = (_: string) => {
+export const isCurrentTextHavingComponent = () => {
+  
   const editor = findEditor();
-
   if (editor) {
-    const selectedText = editor.document.getText(editor.selection)
-    let componentName = selectedText.match(/component[^\n]*/);
+    const selectedText = editor.document.getText(editor.selection);
+    let componentName = selectedText.match(/Component[^\n]*/);
     
     return Boolean(componentName);
   } else {
@@ -138,19 +138,25 @@ export const isTestFile = (fileName: string) => Boolean(fileName.match(/(spec)\/
 
 export const isComponentFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/components/));
 
-export const moveCursorToStr = (str: string) => {
+export const moveCursorToStr = (str: string, selected: boolean = false) => {
   const editor = findEditor();
 
   if (editor) { 
     const document = editor.document;
     const wordPosition = document.positionAt(document.getText().indexOf(str));
-    const newPosition = new Position(wordPosition.line, wordPosition.character + str.length);
-    editor.selection = new Selection(newPosition, newPosition);
+    const strLastPosition = new Position(wordPosition.line, wordPosition.character + str.length);
+    if (selected) {
+      const strFirstPosition = new Position(wordPosition.line, wordPosition.character);
+      editor.selection = new Selection(strFirstPosition, strLastPosition);
+    } else {
+      editor.selection = new Selection(strLastPosition, strLastPosition);
+    }
    }
 };
 
 export const findEditor = (): TextEditor | undefined => {
   const editor = window.activeTextEditor;
+  
   if (!editor) {
     window.showErrorMessage('No active text editor');
     return;
@@ -237,54 +243,50 @@ export const getActiveFileName = () => {
 
 export const isSidecarUsedForComponents = () => workspace.getConfiguration('navigateRailsFiles').get("useViewComponentsSidecar") as boolean;
 
-export const navigateToComponentFileFromCurrentLine = async () => {
+export const navigateToComponentFileFromCurrentLine = async (fileType: "ruby" | "view" | "test") => {
   const editor = findEditor();
 
   if (editor) {
-    const cursorPosition = editor.selection.active
-    const currentLineText = editor.document.lineAt(cursorPosition.line).text
-    let componentName = currentLineText.match(/(\'|\")(?<componentName>[^\s\,]*)(\'|\")/)?.groups?.componentName;
-    window.setStatusBarMessage(componentName || "===", 1000);        
-    
+    const selectedText = editor.document.getText(editor.selection)
+
+    let componentName = selectedText.match(/(?<componentName>[a-zA-Z\:\d]*Component)/)?.groups?.componentName;
+
     if (!componentName) {
       return;
     }
-   
-    const templateEngines = getTemplateEngines();
 
-    for (let templateEngine of templateEngines) {
-      let fullPathWithTemplateEngine = `app/components/${componentName}/component.html.${templateEngine}`;
-      
-      if (checkFileExists(fullPathWithTemplateEngine)) {
-        await openDocument(fullPathWithTemplateEngine);
-        return;
-      };
-    };
+    componentName = componentName.replace("::", "/");
+    componentName = componentName.replaceAll(/([a-zA-Z\d])([A-Z])/g, "$1_$2");
+    componentName = componentName.toLowerCase();
     
-    window.setStatusBarMessage("Any valid component.html file couldn't be found.", 1000);        
+    await openComponentFile(componentName, fileType);
   }
 }
 export const navigateToComponentFile = async (fileType: "ruby" | "view" | "test") => {
   let activeFileName = getActiveFileName();
   if (!activeFileName) {return;}
       
-  let componentName = activeFileName.match(/\/(app|spec)\/(?<componentName>.*?)(_spec\.rb|\.html|\.rb)/)?.groups?.componentName || "";
+  let componentName = activeFileName.match(/\/(app|spec)\/components\/(?<componentName>.*?)(_spec\.rb|\.html|\.rb)/)?.groups?.componentName || "";
   
   if (isSidecarUsedForComponents()) {
     if (activeFileName.match(/\.html\./) && activeFileName.match(/(\/\w+)\1/)) {
       componentName = componentName.replace(/\/\w+$/, "");
     }
-
-    if (fileType === "view") {
-      componentName = componentName.replace(/(\/\w+)$/, "$1$1");
-    }
   }
       
+  await openComponentFile(componentName, fileType)
+};
+
+export const openComponentFile = async (componentName: string, fileType: "ruby" | "view" | "test") => {
+  if (isSidecarUsedForComponents() && fileType === "view") {
+    componentName = componentName.replace(/(\w+)$/, "$1/$1");
+  }
+
   if (fileType === "view") {
     const templateEngines = getTemplateEngines();
 
     for (let templateEngine of templateEngines) {
-      let fullPathWithTemplateEngine = `app/${componentName}.html.${templateEngine}`;
+      let fullPathWithTemplateEngine = `app/components/${componentName}.html.${templateEngine}`;
       
       if (checkFileExists(fullPathWithTemplateEngine)) {
         await openDocument(fullPathWithTemplateEngine);
@@ -295,13 +297,13 @@ export const navigateToComponentFile = async (fileType: "ruby" | "view" | "test"
     window.setStatusBarMessage("Any valid view file couldn't be found.", 1000);
 
   } else if (fileType === "test"){
-
-    if (!(await openTestFile(componentName))) {
+    
+    if (!(await openTestFile(`components/${componentName}`))) {
       window.setStatusBarMessage("A test file for the component couldn't be found.", 1000);
     }
 
   } else if (fileType === "ruby"){
-    await openDocument("app/" + componentName + ".rb");
+    await openDocument("app/components/" + componentName + ".rb");
   };
 };
 

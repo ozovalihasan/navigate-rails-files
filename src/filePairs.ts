@@ -23,6 +23,12 @@ export type PairsType =  PairType[];
 
 export const rbPairs: PairsType = [
   {
+    checkFunction: (_:string) => isCurrentTextHavingComponent(), 
+    callback : async () => {
+      await navigateToComponentFileFromCurrentLine("ruby");
+    }
+  },
+  {
     checkFunction: isControllerTestFile, 
     callback : async () => {
       await navigateToControllerFile("app");
@@ -50,9 +56,9 @@ export const rbPairs: PairsType = [
 
 export const htmlPairs: PairsType = [
   {
-    checkFunction: isCurrentTextHavingComponent, 
+    checkFunction: (_:string) => isCurrentTextHavingComponent(), 
     callback : async () => {
-      await navigateToComponentFileFromCurrentLine();
+      await navigateToComponentFileFromCurrentLine("view");
     }
   },
   {
@@ -71,6 +77,12 @@ export const htmlPairs: PairsType = [
 
 export const turboStreamPairs: PairsType = [
   {
+    checkFunction: (_:string) => isCurrentTextHavingComponent(), 
+    callback : async () => {
+      await navigateToComponentFileFromCurrentLine("view");
+    }
+  },
+  {
     checkFunction: isViewRelatedFile, 
     callback : async () => {
       await navigateToViewFile("app", "turbo_stream");
@@ -79,6 +91,18 @@ export const turboStreamPairs: PairsType = [
 ];
 
 export const rspecPairs: PairsType = [
+  {
+    checkFunction: (_:string) => isCurrentTextHavingComponent(), 
+    callback : async () => {
+      await navigateToComponentFileFromCurrentLine("test");
+    }
+  },
+  {
+    checkFunction: (_:string) => isCurrentTextHavingComponent(), 
+    callback : async () => {
+      await navigateToComponentFileFromCurrentLine("test");
+    }
+  },
   {
     checkFunction: isControllerFile, 
     callback : async () => {

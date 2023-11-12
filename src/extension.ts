@@ -13,13 +13,15 @@ export const navigateToFile = async (pairs: PairsType) => {
 	const editor = findEditor();
 	
 	if (editor) {
+
 		let activeFileName = getActiveFileName();
 		if (!activeFileName) {
 			window.setStatusBarMessage("Any open file couldn't be found", 1000);
 			return;
 		}
-	
+		
 		for (let pair of pairs) {
+			
 			if (pair.checkFunction(activeFileName)) {
 				await pair.callback();
 				return;

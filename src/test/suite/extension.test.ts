@@ -7,12 +7,25 @@ import * as sinon from 'sinon';
 import * as utils from '../../utils';
 import { afterEach, before, beforeEach } from 'mocha';
 
-const setExpectation = (command: string) => (async (filePath: string, expectedFilePath?: "same" | string, moveToAction?: string) => {
+const setExpectation = (command: string) => (async (filePath: string, expectedFilePath?: "same" | string, moveToAction?: string | null, selectedText?: string) => {
 	sinon.restore();
+
+	if (!selectedText){
+		sinon.stub(utils, "isCurrentTextHavingComponent").returns(false);
+	}
 
 	if (filePath === expectedFilePath) {
 		expectedFilePath = "same";
 	}
+
+	if (expectedFilePath?.match("with_sidecar")){
+		sinon.stub(workspace, 'getConfiguration').returns(
+			{
+				get: sinon.stub().withArgs('useViewComponentsSidecar').returns(true).withArgs("templateEngines").returns(["erb", "slim", "haml"]),
+			} as any
+		);
+	}
+
 	sinon.stub(utils, "getTextUntilCursor").returns("def index");
 	sinon.stub(utils, "getActiveFileName").returns("mock_root_folder/" + filePath);
 
@@ -23,6 +36,7 @@ const setExpectation = (command: string) => (async (filePath: string, expectedFi
 		checkFileExists = sinon.stub(utils, "checkFileExists").returns(true);
 	}
 	const openDocument = sinon.spy(utils, "openDocument");
+	
 	sinon.stub(workspace, "openTextDocument");
 	sinon.stub(window, "showTextDocument");
 
@@ -43,17 +57,16 @@ const setExpectation = (command: string) => (async (filePath: string, expectedFi
 		moveCursorToAction = sinon.stub(utils, "moveCursorToAction");
 	}
 
+	sinon.stub(utils, 'findEditor').returns({document: {fileName: filePath, getText: () => selectedText || ""}} as vscode.TextEditor);
+	
 	await commands.executeCommand(command);
 	
-	if (expectedFilePath) {
-		
-		if (expectedFilePath === "same") {
-			expect(openDocument.calledWith(filePath)).to.be.true;
-			expect(statusBarMessage.called).to.be.true;
-		} else {
-			expect(openDocument.calledWith(expectedFilePath)).to.be.true;
-			expect(statusBarMessage.called).to.be.false;
-		}
+	if (expectedFilePath === "same") {
+		expect(openDocument.calledWith(filePath)).to.be.true;
+		expect(statusBarMessage.called).to.be.true;
+	} else if (expectedFilePath) {
+		expect(openDocument.calledWith(expectedFilePath)).to.be.true;
+		expect(statusBarMessage.called).to.be.false;
 	} else {
 		expect(openDocument.called).to.be.false;
 		expect(statusBarMessage.called).to.be.true;
@@ -78,14 +91,17 @@ suite('Extension Test Suite', () => {
 	window.showInformationMessage('Start all tests.');
 
 	suite('Test "navigateRailsFiles.openRbFile" command', () => {
-		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string) => Promise<void>;
+		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string | null, selectedText?: string) => Promise<void>;
 		let targetPath: string;
 
 		before(() => {
 			runExpectation = setExpectation('navigateRailsFiles.openRbFile');
 		});
 
-			
+		test('opens a component"s ruby file if the selected text contains a component name', async () => { 
+			await runExpectation("mock_file_path", 'app/components/mock_folder/mock_component.rb', null, "MockFolder::MockComponent.new");
+		});
+		
 		test('for view related files', async () => { 
 			targetPath = 'app/controllers/products_controller.rb';
 
@@ -117,6 +133,7 @@ suite('Extension Test Suite', () => {
 		
 		test('for component files', async () => {
 			targetPath = 'app/components/mock_component.rb';
+
 			await runExpectation('app/components/mock_component.rb', targetPath);
 			await runExpectation('app/components/mock_component.html.erb', targetPath);
 			await runExpectation('app/components/mock_component.html.slim', targetPath);
@@ -132,11 +149,19 @@ suite('Extension Test Suite', () => {
 	});
 	
 	suite('Test "navigateRailsFiles.changeToAppHtmlFile" command', () => {
-		let runExpectation: (filePath: string, moveToAction?: string) => Promise<void>;
+		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string | null, selectedText?: string) => Promise<void>;
 		let targetPath: string;
 
 		before(() => {
 			runExpectation = setExpectation('navigateRailsFiles.changeToAppHtmlFile');
+		});
+
+		test('opens a component"s view file if the selected text contains a component name', async () => { 
+			await runExpectation("mock_file_path", 'app/components/mock_folder/mock_component.html.erb', null, "MockFolder::MockComponent.new");
+		});
+
+		test('opens a component"s view file if the selected text contains a component name and useViewComponentsSidecar is true', async () => { 
+			await runExpectation("mock_file_path", 'app/components/mock_folder/with_sidecar_component/with_sidecar_component.html.erb', null, "MockFolder::WithSidecarComponent.new");
 		});
 
 		test('for view related files',async () => {
@@ -180,11 +205,15 @@ suite('Extension Test Suite', () => {
 	});
 	
 	suite('Test "navigateRailsFiles.changeToAppTurboStreamFile" command', () => {
-		let runExpectation: (filePath: string, moveToAction?: string) => Promise<void>;
+		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string | null, selectedText?: string) => Promise<void>;
 		let targetPath: string;
 
 		before(() => {
 			runExpectation = setExpectation('navigateRailsFiles.changeToAppTurboStreamFile');
+		});
+
+		test('opens a component"s view file if the selected text contains a component name', async () => { 
+			await runExpectation("mock_file_path", 'app/components/mock_folder/mock_component.html.erb', null, "MockFolder::MockComponent.new");
 		});
 
 		test('for view related files',async () => {
@@ -229,11 +258,15 @@ suite('Extension Test Suite', () => {
 	});
 
 	suite('Test "navigateRailsFiles.changeToRspecFile" command', () => {
-		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string) => Promise<void>;
+		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string | null, selectedText?: string) => Promise<void>;
 		let targetPath: string;
 
 		before(() => {
 			runExpectation = setExpectation('navigateRailsFiles.changeToRspecFile');
+		});
+		
+		test('opens a component"s test file if the selected text contains a component name', async () => { 
+			await runExpectation("mock_file_path", 'spec/components/mock_folder/mock_component_spec.rb', null, "MockFolder::MockComponent.new");
 		});
 
 		test('for view related files',async () => {
