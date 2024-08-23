@@ -7,18 +7,18 @@ import * as sinon from 'sinon';
 import * as utils from '../../utils';
 import { afterEach, before, beforeEach } from 'mocha';
 
-const setExpectation = (command: string) => (async (filePath: string, expectedFilePath?: "same" | string, moveToAction?: string | null, selectedText?: string) => {
+const setExpectation = (command: string) => (async (filePath: string, options: {expectedFilePath?: "same" | string | null, moveToAction?: string | null, selectedText?: string | null, beforeFunction?: Function | null} = {}) => {
 	sinon.restore();
 
-	if (!selectedText){
-		sinon.stub(utils, "isCurrentTextHavingComponent").returns(false);
+	if (options.beforeFunction) { options.beforeFunction() }
+
+	
+
+	if (filePath === options.expectedFilePath) {
+		options.expectedFilePath = "same";
 	}
 
-	if (filePath === expectedFilePath) {
-		expectedFilePath = "same";
-	}
-
-	if (expectedFilePath?.match("with_sidecar")){
+	if (options.expectedFilePath?.match("with_sidecar")){
 		sinon.stub(workspace, 'getConfiguration').returns(
 			{
 				get: sinon.stub().withArgs('useViewComponentsSidecar').returns(true).withArgs("templateEngines").returns(["erb", "slim", "haml"]),
@@ -30,7 +30,7 @@ const setExpectation = (command: string) => (async (filePath: string, expectedFi
 	sinon.stub(utils, "getActiveFileName").returns("mock_root_folder/" + filePath);
 
 	let checkFileExists;
-	if (expectedFilePath){
+	if (options.expectedFilePath){
 		checkFileExists = sinon.stub(utils, "checkFileExists").returns(false);
 	} else {
 		checkFileExists = sinon.stub(utils, "checkFileExists").returns(true);
@@ -41,11 +41,11 @@ const setExpectation = (command: string) => (async (filePath: string, expectedFi
 	sinon.stub(window, "showTextDocument");
 
 	let statusBarMessage: any = null;
-	if (expectedFilePath) {
-		if (expectedFilePath === "same") {
+	if (options.expectedFilePath) {
+		if (options.expectedFilePath === "same") {
 			checkFileExists.withArgs(filePath).returns(true);
 		} else {
-			checkFileExists.withArgs(expectedFilePath).returns(true);
+			checkFileExists.withArgs(options.expectedFilePath).returns(true);
 		}
 		statusBarMessage = sinon.spy(vscode.window, 'setStatusBarMessage');	
 	} else {
@@ -53,27 +53,27 @@ const setExpectation = (command: string) => (async (filePath: string, expectedFi
 	}
 
 	let moveCursorToAction: any = null;
-	if (moveToAction) {
+	if (options.moveToAction) {
 		moveCursorToAction = sinon.stub(utils, "moveCursorToAction");
 	}
 
-	sinon.stub(utils, 'findEditor').returns({document: {fileName: filePath, getText: () => selectedText || ""}} as vscode.TextEditor);
+	sinon.stub(utils, 'findEditor').returns({document: {fileName: filePath, getText: () => options.selectedText || ""}} as vscode.TextEditor);
 	
 	await commands.executeCommand(command);
 	
-	if (expectedFilePath === "same") {
+	if (options.expectedFilePath === "same") {
 		expect(openDocument.calledWith(filePath)).to.be.true;
 		expect(statusBarMessage.called).to.be.true;
-	} else if (expectedFilePath) {
-		expect(openDocument.calledWith(expectedFilePath)).to.be.true;
+	} else if (options.expectedFilePath) {
+		expect(openDocument.calledWith(options.expectedFilePath)).to.be.true;
 		expect(statusBarMessage.called).to.be.false;
 	} else {
 		expect(openDocument.called).to.be.false;
 		expect(statusBarMessage.called).to.be.true;
 	}
 	
-	if (moveToAction) {
-		expect(moveCursorToAction.calledWith(moveToAction)).to.be.true;
+	if (options.moveToAction) {
+		expect(moveCursorToAction.calledWith(options.moveToAction)).to.be.true;
 	}
 });
 
@@ -91,65 +91,100 @@ suite('Extension Test Suite', () => {
 	window.showInformationMessage('Start all tests.');
 
 	suite('Test "navigateRailsFiles.openRbFile" command', () => {
-		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string | null, selectedText?: string) => Promise<void>;
+		let runExpectation: (filePath: string, options?: { expectedFilePath?: "same" | string | null; moveToAction?: string | null; selectedText?: string | null; beforeFunction?: Function | null}) => Promise<void>;
 		let targetPath: string;
+		let targetMailerPath: string;
 
 		before(() => {
 			runExpectation = setExpectation('navigateRailsFiles.openRbFile');
 		});
 
 		test('opens a component"s ruby file if the selected text contains a component name', async () => { 
-			await runExpectation("mock_file_path", 'app/components/mock_folder/mock_component.rb', null, "MockFolder::MockComponent.new");
+			await runExpectation("mock_file_path", {expectedFilePath: 'app/components/mock_folder/mock_component.rb', selectedText: "MockFolder::MockComponent.new"});
 		});
 		
-		test('for view related files', async () => { 
+		test('for controller related files', async () => { 
 			targetPath = 'app/controllers/products_controller.rb';
 
-			await runExpectation('app/controllers/products_controller.rb', targetPath, 'index');
+			await runExpectation('app/controllers/products_controller.rb', {expectedFilePath: targetPath, moveToAction: 'index'});
 
-			await runExpectation('app/views/products/index.html.erb', targetPath, 'index');
-			await runExpectation('app/views/products/index.html.slim', targetPath, 'index');
-			await runExpectation('app/views/products/index.html.haml', targetPath, 'index');
-			await runExpectation('app/views/products/index.turbo_stream.erb', targetPath, 'index');
-			await runExpectation('app/views/products/index.turbo_stream.slim', targetPath, 'index');
-			await runExpectation('app/views/products/index.turbo_stream.haml', targetPath, 'index');
+			await runExpectation('app/views/products/index.html.erb', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('app/views/products/index.html.slim', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('app/views/products/index.html.haml', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('app/views/products/index.turbo_stream.erb', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('app/views/products/index.turbo_stream.slim', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('app/views/products/index.turbo_stream.haml', {expectedFilePath: targetPath, moveToAction: 'index'});
 			
-			await runExpectation('spec/views/products/index.html.erb_spec.rb', targetPath, 'index');
-			await runExpectation('spec/views/products/index.html.slim_spec.rb', targetPath, 'index');
-			await runExpectation('spec/views/products/index.html.haml_spec.rb', targetPath, 'index');
-			await runExpectation('spec/views/products/index.turbo_stream.erb_spec.rb', targetPath, 'index');
-			await runExpectation('spec/views/products/index.turbo_stream.slim_spec.rb', targetPath, 'index');
-			await runExpectation('spec/views/products/index.turbo_stream.haml_spec.rb', targetPath, 'index');
+			await runExpectation('spec/views/products/index.html.erb_spec.rb', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('spec/views/products/index.html.slim_spec.rb', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('spec/views/products/index.html.haml_spec.rb', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('spec/views/products/index.turbo_stream.erb_spec.rb', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('spec/views/products/index.turbo_stream.slim_spec.rb', {expectedFilePath: targetPath, moveToAction: 'index'});
+			await runExpectation('spec/views/products/index.turbo_stream.haml_spec.rb', {expectedFilePath: targetPath, moveToAction: 'index'});
+
+			await runExpectation('spec/requests/products_spec.rb', {expectedFilePath: targetPath});
+		});
+		
+		test('for mailer related files', async () => { 
+			targetPath = 'app/mailers/product_mailer.rb';
+
+			await runExpectation('app/mailers/product_mailer.rb', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+
+			await runExpectation('app/mailers/product_mailer/index.html.erb', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('app/mailers/product_mailer/index.html.slim', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('app/mailers/product_mailer/index.html.haml', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('app/mailers/product_mailer/index.text.erb', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('app/mailers/product_mailer/index.text.slim', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('app/mailers/product_mailer/index.text.haml', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
 			
-			await runExpectation('spec/requests/products_spec.rb', targetPath);
+			await runExpectation('spec/mailers/product_mailer/index.html.erb', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('spec/mailers/product_mailer/index.html.slim', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('spec/mailers/product_mailer/index.html.haml', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('spec/mailers/product_mailer/index.text.erb', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('spec/mailers/product_mailer/index.text.slim', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
+			await runExpectation('spec/mailers/product_mailer/index.text.haml', {expectedFilePath: targetMailerPath, moveToAction: 'index'});
 		});
 		
 		test('for model files', async () => {
 			targetPath = 'app/models/product.rb';
 
-			await runExpectation('app/models/product.rb', targetPath);
-			await runExpectation('spec/models/product_spec.rb', targetPath);
+			await runExpectation('app/models/product.rb', {expectedFilePath: "same"});
+			await runExpectation('spec/models/product_spec.rb', {expectedFilePath: targetPath});
 		});
 		
 		test('for component files', async () => {
 			targetPath = 'app/components/mock_component.rb';
 
-			await runExpectation('app/components/mock_component.rb', targetPath);
-			await runExpectation('app/components/mock_component.html.erb', targetPath);
-			await runExpectation('app/components/mock_component.html.slim', targetPath);
-			await runExpectation('app/components/mock_component.html.haml', targetPath);
-			await runExpectation('spec/components/mock_component_spec.rb', targetPath);
+			await runExpectation('app/components/mock_component.rb', {expectedFilePath: "same"});
+			await runExpectation('app/components/mock_component.html.erb', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.slim', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.haml', {expectedFilePath: targetPath});
 			
-			await runExpectation('app/components/mock_component.rb', "same");
-			await runExpectation('app/components/mock_component.html.erb', targetPath);
-			await runExpectation('app/components/mock_component.html.slim', targetPath);
-			await runExpectation('app/components/mock_component.html.haml', targetPath);
-			await runExpectation('spec/components/mock_component_spec.rb', targetPath);
+			await runExpectation('spec/components/mock_component_spec.rb', {expectedFilePath: targetPath});
+		});
+
+		test('for component files when sidecar usage is enabled ', async () => {
+			const runBefore = () => {
+				sinon.stub(workspace, 'getConfiguration').returns(
+					{
+						get: sinon.stub().withArgs('useViewComponentsSidecar').returns(true),
+					} as any
+				);
+			}
+			
+			targetPath = 'app/components/mock_component.rb';
+
+			await runExpectation('app/components/mock_component.rb', {expectedFilePath: "same"});
+			await runExpectation('app/components/mock_component.html.erb', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.slim', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.haml', {expectedFilePath: targetPath});
+			
+			await runExpectation('spec/components/mock_component_spec.rb', {expectedFilePath: targetPath});
 		});
 	});
 	
 	suite('Test "navigateRailsFiles.changeToAppHtmlFile" command', () => {
-		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string | null, selectedText?: string) => Promise<void>;
+		let runExpectation: (filePath: string, options?: { expectedFilePath?: "same" | string | null; moveToAction?: string | null; selectedText?: string | null; beforeFunction?: Function | null}) => Promise<void>;
 		let targetPath: string;
 
 		before(() => {
@@ -157,35 +192,38 @@ suite('Extension Test Suite', () => {
 		});
 
 		test('opens a component"s view file if the selected text contains a component name', async () => { 
-			await runExpectation("mock_file_path", 'app/components/mock_folder/mock_component.html.erb', null, "MockFolder::MockComponent.new");
+			await runExpectation("mock_file_path", {expectedFilePath: 'app/components/mock_folder/mock_component.html.erb', selectedText: "MockFolder::MockComponent.new"});
 		});
 
 		test('opens a component"s view file if the selected text contains a component name and useViewComponentsSidecar is true', async () => { 
-			await runExpectation("mock_file_path", 'app/components/mock_folder/with_sidecar_component/with_sidecar_component.html.erb', null, "MockFolder::WithSidecarComponent.new");
+			const beforeFunction = () => {
+				sinon.stub(utils, "isSidecarUsedForComponents").returns(true);
+			}
+			await runExpectation("mock_file_path", {expectedFilePath: 'app/components/mock_folder/with_sidecar_component/with_sidecar_component.html.erb', selectedText: "MockFolder::WithSidecarComponent.new", beforeFunction: beforeFunction});
 		});
 
 		test('for view related files',async () => {
 
 				targetPath = 'app/views/products/index.html.erb';
 
-				await runExpectation('app/controllers/products_controller.rb', targetPath);
-				await runExpectation('app/controllers/products_controller.rb', 'app/views/products/index.turbo_stream.erb');
+				await runExpectation('app/controllers/products_controller.rb', {expectedFilePath: targetPath});
+				await runExpectation('app/controllers/products_controller.rb', {expectedFilePath: 'app/views/products/index.turbo_stream.erb'});
 
-				await runExpectation('app/views/products/index.html.erb', targetPath);
-				await runExpectation('app/views/products/index.html.slim', targetPath);
-				await runExpectation('app/views/products/index.html.haml', targetPath);
-				await runExpectation('app/views/products/index.turbo_stream.erb', targetPath);
-				await runExpectation('app/views/products/index.turbo_stream.slim', targetPath);
-				await runExpectation('app/views/products/index.turbo_stream.haml', targetPath);
+				await runExpectation('app/views/products/index.html.erb', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.html.slim', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.html.haml', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.turbo_stream.erb', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.turbo_stream.slim', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.turbo_stream.haml', {expectedFilePath: targetPath});
 
-				await runExpectation('app/views/products/index.html.erb', "same");
-				await runExpectation('app/views/products/index.html.slim', "same");
-				await runExpectation('app/views/products/index.html.haml', "same");
-				await runExpectation('app/views/products/index.turbo_stream.erb', "same");
-				await runExpectation('app/views/products/index.turbo_stream.slim', "same");
-				await runExpectation('app/views/products/index.turbo_stream.haml', "same");
+				await runExpectation('app/views/products/index.html.erb', {expectedFilePath: "same"});
+				await runExpectation('app/views/products/index.html.slim', {expectedFilePath: "same"});
+				await runExpectation('app/views/products/index.html.haml', {expectedFilePath: "same"});
+				await runExpectation('app/views/products/index.turbo_stream.erb', {expectedFilePath: "same"});
+				await runExpectation('app/views/products/index.turbo_stream.slim', {expectedFilePath: "same"});
+				await runExpectation('app/views/products/index.turbo_stream.haml', {expectedFilePath: "same"});
 				
-				await runExpectation('spec/views/products/index.html.erb_spec.rb', targetPath);
+				await runExpectation('spec/views/products/index.html.erb_spec.rb', {expectedFilePath: targetPath});
 				await runExpectation('spec/requests/products_spec.rb');
 		});
 
@@ -196,16 +234,16 @@ suite('Extension Test Suite', () => {
 		
 		test('for component files', async () => {
 			targetPath = 'app/components/mock_component.html.erb';
-			await runExpectation('app/components/mock_component.rb', targetPath);
-			await runExpectation('app/components/mock_component.html.erb', targetPath);
-			await runExpectation('app/components/mock_component.html.slim', targetPath);
-			await runExpectation('app/components/mock_component.html.haml', targetPath);
-			await runExpectation('spec/components/mock_component_spec.rb', targetPath);
+			await runExpectation('app/components/mock_component.rb', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.erb', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.slim', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.haml', {expectedFilePath: targetPath});
+			await runExpectation('spec/components/mock_component_spec.rb', {expectedFilePath: targetPath});
 		});
 	});
 	
 	suite('Test "navigateRailsFiles.changeToAppTurboStreamFile" command', () => {
-		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string | null, selectedText?: string) => Promise<void>;
+		let runExpectation: (filePath: string, options?: { expectedFilePath?: "same" | string | null; moveToAction?: string | null; selectedText?: string | null; beforeFunction?: Function | null}) => Promise<void>;
 		let targetPath: string;
 
 		before(() => {
@@ -213,31 +251,31 @@ suite('Extension Test Suite', () => {
 		});
 
 		test('opens a component"s view file if the selected text contains a component name', async () => { 
-			await runExpectation("mock_file_path", 'app/components/mock_folder/mock_component.html.erb', null, "MockFolder::MockComponent.new");
+			await runExpectation("mock_file_path", {expectedFilePath: 'app/components/mock_folder/mock_component.html.erb', selectedText: "MockFolder::MockComponent.new"});
 		});
 
 		test('for view related files',async () => {
 
 				targetPath = 'app/views/products/index.turbo_stream.erb';
 
-				await runExpectation('app/controllers/products_controller.rb', targetPath);
-				await runExpectation('app/controllers/products_controller.rb', 'app/views/products/index.turbo_stream.erb');
+				await runExpectation('app/controllers/products_controller.rb', {expectedFilePath: targetPath});
+				await runExpectation('app/controllers/products_controller.rb', {expectedFilePath: 'app/views/products/index.turbo_stream.erb'});
 
-				await runExpectation('app/views/products/index.html.erb', targetPath);
-				await runExpectation('app/views/products/index.html.slim', targetPath);
-				await runExpectation('app/views/products/index.html.haml', targetPath);
-				await runExpectation('app/views/products/index.turbo_stream.erb', targetPath);
-				await runExpectation('app/views/products/index.turbo_stream.slim', targetPath);
-				await runExpectation('app/views/products/index.turbo_stream.haml', targetPath);
+				await runExpectation('app/views/products/index.html.erb', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.html.slim', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.html.haml', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.turbo_stream.erb', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.turbo_stream.slim', {expectedFilePath: targetPath});
+				await runExpectation('app/views/products/index.turbo_stream.haml', {expectedFilePath: targetPath});
 
-				await runExpectation('app/views/products/index.html.erb', "app/views/products/index.turbo_stream.erb");
-				await runExpectation('app/views/products/index.html.slim', "app/views/products/index.turbo_stream.slim");
-				await runExpectation('app/views/products/index.html.haml', "app/views/products/index.turbo_stream.haml");
-				await runExpectation('app/views/products/index.turbo_stream.erb', "same");
-				await runExpectation('app/views/products/index.turbo_stream.slim', "same");
-				await runExpectation('app/views/products/index.turbo_stream.haml', "same");
+				await runExpectation('app/views/products/index.html.erb', {expectedFilePath: "app/views/products/index.turbo_stream.erb"});
+				await runExpectation('app/views/products/index.html.slim', {expectedFilePath: "app/views/products/index.turbo_stream.slim"});
+				await runExpectation('app/views/products/index.html.haml', {expectedFilePath: "app/views/products/index.turbo_stream.haml"});
+				await runExpectation('app/views/products/index.turbo_stream.erb', {expectedFilePath: "same"});
+				await runExpectation('app/views/products/index.turbo_stream.slim', {expectedFilePath: "same"});
+				await runExpectation('app/views/products/index.turbo_stream.haml', {expectedFilePath: "same"});
 				
-				await runExpectation('spec/views/products/index.html.erb_spec.rb', targetPath);
+				await runExpectation('spec/views/products/index.html.erb_spec.rb', {expectedFilePath: targetPath});
 				await runExpectation('spec/requests/products_spec.rb');
 		});
 
@@ -258,7 +296,7 @@ suite('Extension Test Suite', () => {
 	});
 
 	suite('Test "navigateRailsFiles.changeToRspecFile" command', () => {
-		let runExpectation: (filePath: string, expectedFilePath?: string, moveToAction?: string | null, selectedText?: string) => Promise<void>;
+		let runExpectation: (filePath: string, options?: { expectedFilePath?: "same" | string | null; moveToAction?: string | null; selectedText?: string | null; beforeFunction?: Function | null}) => Promise<void>;
 		let targetPath: string;
 
 		before(() => {
@@ -266,26 +304,26 @@ suite('Extension Test Suite', () => {
 		});
 		
 		test('opens a component"s test file if the selected text contains a component name', async () => { 
-			await runExpectation("mock_file_path", 'spec/components/mock_folder/mock_component_spec.rb', null, "MockFolder::MockComponent.new");
+			await runExpectation("mock_file_path", {expectedFilePath: 'spec/components/mock_folder/mock_component_spec.rb', selectedText: "MockFolder::MockComponent.new"});
 		});
 
 		test('for view related files',async () => {
-				await runExpectation('app/controllers/products_controller.rb', "spec/requests/products_spec.rb");
+				await runExpectation('app/controllers/products_controller.rb', {expectedFilePath: "spec/requests/products_spec.rb"});
 				
-				await runExpectation('app/views/products/index.html.erb', "spec/views/products/index.html.erb_spec.rb");
-				await runExpectation('app/views/products/index.html.slim', "spec/views/products/index.html.slim_spec.rb");
-				await runExpectation('app/views/products/index.html.haml', "spec/views/products/index.html.haml_spec.rb");
-				await runExpectation('app/views/products/index.turbo_stream.erb', "spec/views/products/index.turbo_stream.erb_spec.rb");
-				await runExpectation('app/views/products/index.turbo_stream.slim', "spec/views/products/index.turbo_stream.slim_spec.rb");
-				await runExpectation('app/views/products/index.turbo_stream.haml', "spec/views/products/index.turbo_stream.haml_spec.rb");
+				await runExpectation('app/views/products/index.html.erb', {expectedFilePath: "spec/views/products/index.html.erb_spec.rb"});
+				await runExpectation('app/views/products/index.html.slim', {expectedFilePath: "spec/views/products/index.html.slim_spec.rb"});
+				await runExpectation('app/views/products/index.html.haml', {expectedFilePath: "spec/views/products/index.html.haml_spec.rb"});
+				await runExpectation('app/views/products/index.turbo_stream.erb', {expectedFilePath: "spec/views/products/index.turbo_stream.erb_spec.rb"});
+				await runExpectation('app/views/products/index.turbo_stream.slim', {expectedFilePath: "spec/views/products/index.turbo_stream.slim_spec.rb"});
+				await runExpectation('app/views/products/index.turbo_stream.haml', {expectedFilePath: "spec/views/products/index.turbo_stream.haml_spec.rb"});
 
-				await runExpectation('spec/views/products/index.html.erb_spec.rb', "same");
-				await runExpectation('spec/views/products/index.html.slim_spec.rb', "same");
-				await runExpectation('spec/views/products/index.html.haml_spec.rb', "same");
+				await runExpectation('spec/views/products/index.html.erb_spec.rb', {expectedFilePath: "same"});
+				await runExpectation('spec/views/products/index.html.slim_spec.rb', {expectedFilePath: "same"});
+				await runExpectation('spec/views/products/index.html.haml_spec.rb', {expectedFilePath: "same"});
 
-				await runExpectation('spec/views/products/index.turbo_stream.erb_spec.rb', "same");
-				await runExpectation('spec/views/products/index.turbo_stream.slim_spec.rb', "same");
-				await runExpectation('spec/views/products/index.turbo_stream.haml_spec.rb', "same");
+				await runExpectation('spec/views/products/index.turbo_stream.erb_spec.rb', {expectedFilePath: "same"});
+				await runExpectation('spec/views/products/index.turbo_stream.slim_spec.rb', {expectedFilePath: "same"});
+				await runExpectation('spec/views/products/index.turbo_stream.haml_spec.rb', {expectedFilePath: "same"});
 				
 				await runExpectation('spec/requests/products_spec.rb');
 		});
@@ -293,20 +331,20 @@ suite('Extension Test Suite', () => {
 		test('for model files', async () => {
 			targetPath = 'spec/models/product_spec.rb';
 
-			await runExpectation('app/models/product.rb', targetPath);
-			await runExpectation('spec/models/product_spec.rb', targetPath);
+			await runExpectation('app/models/product.rb', {expectedFilePath: targetPath});
+			await runExpectation('spec/models/product_spec.rb', {expectedFilePath: targetPath});
 		});
 		
 		test('for component files', async () => {
 			targetPath = "spec/components/mock_component_spec.rb";
 			
-			await runExpectation('app/components/mock_component.rb', targetPath);
+			await runExpectation('app/components/mock_component.rb', {expectedFilePath: targetPath});
 			
-			await runExpectation('app/components/mock_component.html.erb', targetPath);
-			await runExpectation('app/components/mock_component.html.slim', targetPath);
-			await runExpectation('app/components/mock_component.html.haml', targetPath);
+			await runExpectation('app/components/mock_component.html.erb', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.slim', {expectedFilePath: targetPath});
+			await runExpectation('app/components/mock_component.html.haml', {expectedFilePath: targetPath});
 			
-			await runExpectation('spec/components/mock_component_spec.rb', targetPath);
+			await runExpectation('spec/components/mock_component_spec.rb', {expectedFilePath: targetPath});
 		});
 	});
 });

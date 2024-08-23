@@ -39,7 +39,7 @@ export const getControllerName = () => {
 export const navigateToControllerFile = async (fileType: "app" | "test") => {
   if (fileType === "app"){
     await openDocument("app/controllers/" + getControllerName() + "_controller.rb");
-  } else {
+  } else if (fileType === "test"){
     let filePath = "spec/requests/" + getControllerName() + "_spec.rb";
     
     if (checkFileExists(filePath)) {
@@ -120,17 +120,43 @@ export const isCurrentTextHavingComponent = () => {
   }
 };
 
-export const isViewRelatedFile = (fileName: string) : Boolean => (isViewFile(fileName) || isControllerFile(fileName));
+export const isControllerOrMailerRelatedFile = (fileName: string) : Boolean => (isControllerRelatedFile(fileName) || isMailerRelatedFile(fileName) || isControllerTestRelatedFile(fileName));
 
-export const isViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isTurboStreamViewFile(fileName));
+export const isControllerRelatedFile = (fileName: string) : Boolean => (isControllerViewFile(fileName) || isControllerFile(fileName) || isControllerTestRelatedFile(fileName));
+
+export const isMailerRelatedFile = (fileName: string) : Boolean => (isMailerViewFile(fileName) || isMailerFile(fileName) || isMailerTestRelatedFile(fileName));
+
+export const isComponentRelatedFile = (fileName: string) : Boolean => (isComponentFile(fileName));
+
+export const isModelRelatedFile = (fileName: string) : Boolean => (isModelFile(fileName));
+
+export const isControllerViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isTurboStreamViewFile(fileName));
+
+export const isMailerViewFile = (fileName: string) => (isHTMLViewFile(fileName) || isTextViewFile(fileName));
 
 export const isControllerFile = (fileName: string) => Boolean(fileName.match(/app\/controllers\/.*_controller.rb/));
 
-export const isControllerTestFile = (fileName: string) => Boolean(fileName.match( /(spec\/requests\/.*_spec.rb)/ ));
+export const isMailerFile = (fileName: string) => Boolean(fileName.match(/app\/mailers\/.*_mailer.rb/));
+
+export const isControllerTestRelatedFile = (fileName: string) : Boolean => (isControllerTestFile(fileName) || isControllerRequestTextFile(fileName));
+
+export const isMailerTestRelatedFile = (fileName: string) : Boolean => (isMailerTestFile(fileName));
+
+export const isControllerTestFile = (fileName: string) => Boolean(fileName.match( /spec\/controllers\/.*_controller_spec.rb/ ));
+
+export const isControllerRequestTextFile = (fileName: string) => Boolean(fileName.match( /spec\/requests\/.*_request_spec.rb/ ));
+
+export const isMailerTestFile = (fileName: string) => Boolean(fileName.match( /spec\/mailers\/.*_mailer_spec.rb/ ));
 
 export const isHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.html\./));
 
+export const isControllerHTMLViewFile = (fileName: string) => ((!isMailerHTMLViewFile(fileName) && isHTMLViewFile))
+
+export const isMailerHTMLViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*_mailer\/[^\/]*\.html\./));
+
 export const isTurboStreamViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.turbo_stream\./));
+
+export const isTextViewFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/views\/.*\.text\./));
 
 export const isModelFile = (fileName: string) => Boolean(fileName.match(/(app|spec)\/models/));
 
@@ -203,7 +229,9 @@ export const findActionAndController = () => {
   if (isControllerTestFile(activeFileName)) {
 
     controller = (
-      activeFileName.match(/spec\/requests\/(?<controller>.*)_spec.rb$/)?.groups?.controller || 
+      activeFileName.match(/spec\/requests\/(?<controller>.*)_request_spec.rb$/)?.groups?.controller || 
+      activeFileName.match(/spec\/controllers\/(?<controller>.*)_controller_spec.rb$/)?.groups?.controller ||
+      activeFileName.match(/spec\/mailers\/(?<controller>.*)_mailer_spec.rb$/)?.groups?.controller ||
       ""
     );
     
@@ -218,9 +246,13 @@ export const findActionAndController = () => {
       action = "";
     }
 
-    controller = activeFileName.match(/app\/controllers\/(?<controller>.*)_controller.rb$/)?.groups?.controller || "";
+    if (isControllerFile(activeFileName)) {
+      controller = activeFileName.match(/app\/controllers\/(?<controller>.*)_controller.rb$/)?.groups?.controller || "";
+    } else if (isMailerFile(activeFileName)) {
+      controller = activeFileName.match(/app\/mailers\/(?<mailer>.*)_mailer.rb$/)?.groups?.mailer || "";
+    }
     
-  } else if ( isViewFile(activeFileName) ) {
+  } else if ( isControllerViewFile(activeFileName) ) {
 
     (
       {controller, action} = activeFileName.match(
@@ -228,6 +260,10 @@ export const findActionAndController = () => {
       )?.groups || {controller: "", action: ""}
     );
     
+    if (isMailerFile(activeFileName)) {
+      controller = controller.replace(/_mailer$/, "");
+    }
+
   } else {
     window.setStatusBarMessage('There is no an action or a controller.', 1000); 
   }
@@ -319,7 +355,7 @@ export const navigateToViewFile = async (folderName: "app" | "test", viewType: "
   let fullPath = "";
   const templateEngines = getTemplateEngines();
  
-  let viewTypes = viewType === "html" ? ( ["html", "turbo_stream"] as const ) : ( ["turbo_stream"] as const );
+  let viewTypes = viewType === "html" ? ( ["html", "turbo_stream", "text"] as const ) : ( ["turbo_stream", "text"] as const );
   
   for (let viewType of viewTypes) {
     for (let templateEngine of templateEngines) {

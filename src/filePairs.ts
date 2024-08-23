@@ -9,9 +9,15 @@ import {
   isModelFile, 
   isControllerTestFile, 
   isTurboStreamViewFile, 
-  isViewRelatedFile, 
+  isControllerRelatedFile, 
   isCurrentTextHavingComponent,
-  navigateToComponentFileFromCurrentLine 
+  navigateToComponentFileFromCurrentLine, 
+  isMailerFile,
+  isMailerTestFile,
+  isMailerRelatedFile,
+  isModelRelatedFile,
+  isComponentRelatedFile,
+  isControllerOrMailerRelatedFile
 } from "./utils";
 
 export type PairType = {
@@ -29,25 +35,25 @@ export const rbPairs: PairsType = [
     }
   },
   {
-    checkFunction: isControllerTestFile, 
+    checkFunction: (activeFileName) => isControllerTestFile(activeFileName) || isControllerFile(activeFileName) || isMailerTestFile(activeFileName) || isMailerFile(activeFileName),
     callback : async () => {
       await navigateToControllerFile("app");
     }
   },
   {
-    checkFunction: isViewRelatedFile, 
+    checkFunction: (activeFileName) => isControllerRelatedFile(activeFileName) || isMailerRelatedFile(activeFileName),
     callback : async () => {
       await navigateToControllerFileWithAction();
     }
   },
   {
-    checkFunction: isModelFile, 
+    checkFunction: isModelRelatedFile, 
     callback:  async () => {
         await navigateToModelFile("app");   
     } 
   },
   {
-    checkFunction: isComponentFile, 
+    checkFunction: isComponentRelatedFile, 
     callback : async () => {
       await navigateToComponentFile("ruby");
     }
@@ -62,7 +68,7 @@ export const htmlPairs: PairsType = [
     }
   },
   {
-    checkFunction: isViewRelatedFile, 
+    checkFunction: isControllerOrMailerRelatedFile,
     callback : async () => {
       await navigateToViewFile("app", "html");
     }
@@ -83,7 +89,7 @@ export const turboStreamPairs: PairsType = [
     }
   },
   {
-    checkFunction: isViewRelatedFile, 
+    checkFunction: isControllerRelatedFile, 
     callback : async () => {
       await navigateToViewFile("app", "turbo_stream");
     }
@@ -98,25 +104,19 @@ export const rspecPairs: PairsType = [
     }
   },
   {
-    checkFunction: (_:string) => isCurrentTextHavingComponent(), 
-    callback : async () => {
-      await navigateToComponentFileFromCurrentLine("test");
-    }
-  },
-  {
-    checkFunction: isControllerFile, 
+    checkFunction: isControllerRelatedFile, 
     callback : async () => {
       await navigateToControllerFile("test");
     }
   },
   {
-    checkFunction: (activeFileName) => isViewRelatedFile(activeFileName) && isTurboStreamViewFile(activeFileName), 
+    checkFunction: (activeFileName) => isControllerRelatedFile(activeFileName) && isTurboStreamViewFile(activeFileName), 
     callback : async () => {
       await navigateToViewFile("test", "turbo_stream");
     }
   },
   {
-    checkFunction: (activeFileName) => isViewRelatedFile(activeFileName) && !isTurboStreamViewFile(activeFileName), 
+    checkFunction: (activeFileName) => isControllerRelatedFile(activeFileName) && !isTurboStreamViewFile(activeFileName), 
     callback : async () => {
       await navigateToViewFile("test", "html");
     }

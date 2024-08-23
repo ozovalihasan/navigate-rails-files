@@ -40,41 +40,41 @@ suite('Utils Test Suite', () => {
   });
 
   test('Test isViewRelatedFile function', () => {
-    expect(utils.isViewRelatedFile('app/controllers/products_controller.rb')).to.be.true;
-    expect(utils.isViewRelatedFile('app/views/products/index.html.erb')).to.be.true;
-    expect(utils.isViewRelatedFile('spec/views/products/index.html.erb_spec.rb')).to.be.true;
-    expect(utils.isViewRelatedFile('app/views/products/index.turbo_stream.erb')).to.be.true;
-    expect(utils.isViewRelatedFile('spec/views/products/index.turbo_stream.erb_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.html.slim')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.html.slim_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.turbo_stream.slim')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.turbo_stream.slim_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.html.haml')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.html.haml_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.turbo_stream.haml')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.turbo_stream.haml_spec.rb')).to.be.true;
+    expect(utils.isControllerRelatedFile('app/controllers/products_controller.rb')).to.be.true;
+    expect(utils.isControllerRelatedFile('app/views/products/index.html.erb')).to.be.true;
+    expect(utils.isControllerRelatedFile('spec/views/products/index.html.erb_spec.rb')).to.be.true;
+    expect(utils.isControllerRelatedFile('app/views/products/index.turbo_stream.erb')).to.be.true;
+    expect(utils.isControllerRelatedFile('spec/views/products/index.turbo_stream.erb_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.html.slim')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.html.slim_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.turbo_stream.slim')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.turbo_stream.slim_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.html.haml')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.html.haml_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.turbo_stream.haml')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.turbo_stream.haml_spec.rb')).to.be.true;
     
-    expect(utils.isViewRelatedFile('app/models/product.rb')).to.be.false;
-    expect(utils.isViewRelatedFile('spec/models/product_spec.rb')).to.be.false;
+    expect(utils.isControllerRelatedFile('app/models/product.rb')).to.be.false;
+    expect(utils.isControllerRelatedFile('spec/models/product_spec.rb')).to.be.false;
   });
 
   test('Test isViewFile function', () => {
-    expect(utils.isViewFile('app/views/products/index.html.erb')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.html.erb_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.turbo_stream.erb')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.turbo_stream.erb_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.html.slim')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.html.slim_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.turbo_stream.slim')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.turbo_stream.slim_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.html.haml')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.html.haml_spec.rb')).to.be.true;
-    expect(utils.isViewFile('app/views/products/index.turbo_stream.haml')).to.be.true;
-    expect(utils.isViewFile('spec/views/products/index.turbo_stream.haml_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.html.erb')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.html.erb_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.turbo_stream.erb')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.turbo_stream.erb_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.html.slim')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.html.slim_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.turbo_stream.slim')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.turbo_stream.slim_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.html.haml')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.html.haml_spec.rb')).to.be.true;
+    expect(utils.isControllerViewFile('app/views/products/index.turbo_stream.haml')).to.be.true;
+    expect(utils.isControllerViewFile('spec/views/products/index.turbo_stream.haml_spec.rb')).to.be.true;
     
-    expect(utils.isViewFile('app/controllers/products_controller.rb')).to.be.false;
-    expect(utils.isViewFile('app/models/product.rb')).to.be.false;
-    expect(utils.isViewFile('spec/models/product_spec.rb')).to.be.false;
+    expect(utils.isControllerViewFile('app/controllers/products_controller.rb')).to.be.false;
+    expect(utils.isControllerViewFile('app/models/product.rb')).to.be.false;
+    expect(utils.isControllerViewFile('spec/models/product_spec.rb')).to.be.false;
   });
 
   test('Test isControllerFile function', () => {
